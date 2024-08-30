@@ -50,7 +50,7 @@ extern "C" {
 /* #define HAL_COMP_MODULE_ENABLED */
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
-/* #define HAL_IWDG_MODULE_ENABLED */
+#define HAL_IWDG_MODULE_ENABLED
 /* #define HAL_TIM_MODULE_ENABLED */
 /* #define HAL_LPTIM_MODULE_ENABLED */
 #define HAL_PWR_MODULE_ENABLED
@@ -169,6 +169,11 @@ in voltage and temperature. */
 #endif /* HAL_I2C_MODULE_ENABLED */
 
 #ifdef HAL_IWDG_MODULE_ENABLED
+#ifndef DBGMCU_APB_FZ1_DBG_IWDG_STOP
+#define DBGMCU_APB_FZ1_DBG_IWDG_STOP_Pos                  (12U)
+#define DBGMCU_APB_FZ1_DBG_IWDG_STOP_Msk                  (0x1UL << DBGMCU_APB_FZ1_DBG_IWDG_STOP_Pos)  /*!< 0x00004000 */
+#define DBGMCU_APB_FZ1_DBG_IWDG_STOP                      DBGMCU_APB_FZ1_DBG_IWDG_STOP_Msk
+#endif
 #include "py32f002b_hal_iwdg.h"
 #endif /* HAL_IWDG_MODULE_ENABLED */
 

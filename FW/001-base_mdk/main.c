@@ -30,9 +30,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "hbox.h"
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+HSTACKLESSCOROUTINE_DECLARE_COROUTINE(wdt)
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -53,6 +55,11 @@ int main(void)
     /* infinite loop */
     while (1)
     {
+        {
+            //run watchdog
+            HSTACKLESSCOROUTINE_ENTRY(wdt);
+            hstacklesscoroutine_coroutine_restart(HSTACKLESSCOROUTINE_GET_GLOBAL_CCB(wdt));
+        }
     }
 }
 

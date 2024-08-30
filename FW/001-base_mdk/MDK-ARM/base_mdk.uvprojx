@@ -336,9 +336,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,PY32F002Bx5,HDEFAULTS_MUTEX_LOCK=mutex_lock,HDEFAULTS_MUTEX_UNLOCK=mutex_unlock,HDEFAULTS_TICK_GET=tick_get,</Define>
+              <Define>USE_HAL_DRIVER,PY32F002Bx5,HDEFAULTS_MUTEX_LOCK=mutex_lock,HDEFAULTS_MUTEX_UNLOCK=mutex_unlock,HDEFAULTS_TICK_GET=tick_get,USING_HMEMORYHEAP,HMEMORYHEAP_DEFAULT_POOL_SIZE=1024</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Device\PY32F0xx\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\PY32F002B_HAL_Driver\Inc;..\;..\..\3rdparty\HCppBox\master\hbox;..\..\3rdparty\HCppBox\master\hbox\cpp</IncludePath>
+              <IncludePath>..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Device\PY32F0xx\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\PY32F002B_HAL_Driver\Inc;..\;..\..\3rdparty\HCppBox\master\hbox;..\..\3rdparty\HCppBox\master\hbox\cpp;..\driver</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -666,6 +666,16 @@
               <FileName>hsoftdog.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\cpp\hsoftdog.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>driver</GroupName>
+          <Files>
+            <File>
+              <FileName>wdt.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\driver\wdt.cpp</FilePath>
             </File>
           </Files>
         </Group>
