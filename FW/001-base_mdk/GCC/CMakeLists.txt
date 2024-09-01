@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
-#设置工程名称
-set(PROJECT_NAME base)
-project(${PROJECT_NAME} C CXX ASM)
 #arm-none-eabi-gcc 工具链设置
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_C_COMPILER arm-none-eabi-gcc)
+set(CMAKE_ASM_COMPILER arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
 set(CMAKE_ADDR2LINE arm-none-eabi-addr2line)
 set(CMAKE_AR arm-none-eabi-ar)
@@ -25,6 +23,9 @@ set(CMAKE_EXECUTABLE_SUFFIX_C .elf)
 set(CMAKE_EXECUTABLE_SUFFIX_CXX .elf)
 set(CMAKE_C_COMPILER_FORCED TRUE)
 set(CMAKE_CXX_COMPILER_FORCED TRUE)
+#设置工程名称
+set(PROJECT_NAME base)
+project(${PROJECT_NAME} C CXX ASM)
 #设置编译选项(采用newlib的nano.specs)
 set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} \
 		-Wall \
