@@ -1,0 +1,120 @@
+cmake_minimum_required(VERSION 3.20)
+#设置工程名称
+set(PROJECT_NAME base)
+project(${PROJECT_NAME} C CXX ASM)
+#arm-none-eabi-gcc 工具链设置
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_C_COMPILER arm-none-eabi-gcc)
+set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
+set(CMAKE_ADDR2LINE arm-none-eabi-addr2line)
+set(CMAKE_AR arm-none-eabi-ar)
+set(CMAKE_RANLIB arm-none-eabi-ranlib)
+set(CMAKE_CXX_COMPILER_AR arm-none-eabi-ar)
+set(CMAKE_CXX_COMPILER_RANLIB arm-none-eabi-ranlib)
+set(CMAKE_C_COMPILER_AR arm-none-eabi-ar)
+set(CMAKE_C_COMPILER_RANLIB arm-none-eabi-ranlib)
+set(CMAKE_Fortran_COMPILER arm-none-eabi-gfortan)
+set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
+set(CMAKE_OBJDUMP arm-none-eabi-objdump)
+set(CMAKE_RC_COMPILER arm-none-eabi-windres)
+set(CMAKE_READELF arm-none-eabi-readelf)
+set(CMAKE_STRIP arm-none-eabi-strip)
+set(CMAKE_LINKER arm-none-eabi-ld)
+set(CMAKE_EXECUTABLE_SUFFIX_ASM .elf)
+set(CMAKE_EXECUTABLE_SUFFIX_C .elf)
+set(CMAKE_EXECUTABLE_SUFFIX_CXX .elf)
+set(CMAKE_C_COMPILER_FORCED TRUE)
+set(CMAKE_CXX_COMPILER_FORCED TRUE)
+#设置编译选项(采用newlib的nano.specs)
+set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} \
+		-Wall \
+		-O2 \
+		-DGCC_COMPILE=1 \
+		-mthumb \
+		-ffunction-sections \
+		-fdata-sections \
+		-mcpu=cortex-m0plus \
+		-std=c11 \
+		-march=armv6-m \
+		 ")
+set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} \
+                -Wall \
+		-fno-rtti \
+		-O2 \
+                -DGCC_COMPILE=1 \
+		-mthumb \
+                -ffunction-sections \
+                -fdata-sections \
+                -mcpu=cortex-m0plus \
+                -std=c++11 \
+                -Wno-psabi \
+                -march=armv6-m \
+                 " )
+set(CMAKE_EXE_LINKER_FLAGS " ${CMAKE_EXE_LINKER_FLAGS}\
+		-mthumb \
+		-Wl,--gc-sections \
+		-mcpu=cortex-m0plus \
+		-T${CMAKE_CURRENT_SOURCE_DIR}/py32f002bx5.ld \
+		-Wl,--warn-common \
+		-Wl,-Map,${PROJECT_NAME}.map \
+		-specs nano.specs \
+		")
+
+set(BUILD_SHARED_LIBS OFF)
+#设置宏定义
+add_definitions(
+-DUSE_HAL_DRIVER
+-DPY32F002Bx5
+-DHDEFAULTS_MUTEX_LOCK=mutex_lock
+-DHDEFAULTS_MUTEX_UNLOCK=mutex_unlock
+-DHDEFAULTS_TICK_GET=tick_get
+-DUSING_HMEMORYHEAP
+-DHMEMORYHEAP_DEFAULT_POOL_SIZE=1024
+)
+#设置头文件目录
+include_directories(
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Inc
+../
+../../3rdparty/HCppBox/master/hbox
+../../3rdparty/HCppBox/master/hbox/cpp
+../driver
+)
+#添加工程文件
+file(GLOB C_CXX_FILES
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.c
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.c
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Src/*.c
+../*.c
+../../3rdparty/HCppBox/master/hbox/*.c
+../../3rdparty/HCppBox/master/hbox/cpp/*.c
+../driver/*.c
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.cpp
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.cpp
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Src/*.cpp
+../*.cpp
+../../3rdparty/HCppBox/master/hbox/*.cpp
+../../3rdparty/HCppBox/master/hbox/cpp/*.cpp
+../driver/*.cpp
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.h
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.h
+../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Inc/*.h
+../*.h
+../../3rdparty/HCppBox/master/hbox/*.h
+../../3rdparty/HCppBox/master/hbox/cpp/*.h
+../driver/*.h
+*.s
+*.h
+*.c
+*.cpp
+)
+#添加可执行文件
+add_executable(${PROJECT_NAME} ${C_CXX_FILES})
+add_custom_command(TARGET ${PROJECT_NAME}
+	POST_BUILD
+	COMMAND  arm-none-eabi-size ${PROJECT_NAME}.elf
+	COMMAND  arm-none-eabi-objcopy --verbose -O binary ${PROJECT_NAME}.elf  ${PROJECT_NAME}.bin
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
