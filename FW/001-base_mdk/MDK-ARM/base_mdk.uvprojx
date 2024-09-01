@@ -403,14 +403,14 @@
               <FilePath>..\system_py32f002b.c</FilePath>
             </File>
             <File>
-              <FileName>startup_py32f002bxx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\startup_py32f002bxx.s</FilePath>
-            </File>
-            <File>
               <FileName>hbox_port.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\hbox_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>startup_py32f002bxx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\startup_py32f002bxx.s</FilePath>
             </File>
           </Files>
         </Group>
