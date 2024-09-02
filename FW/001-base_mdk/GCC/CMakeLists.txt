@@ -37,6 +37,7 @@ set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} \
 		-mcpu=cortex-m0plus \
 		-std=c11 \
 		-march=armv6-m \
+		-specs=nano.specs \
 		 ")
 set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} \
                 -Wall \
@@ -50,6 +51,7 @@ set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} \
                 -std=c++11 \
                 -Wno-psabi \
                 -march=armv6-m \
+		-specs nano.specs \
                  " )
 set(CMAKE_EXE_LINKER_FLAGS " ${CMAKE_EXE_LINKER_FLAGS}\
 		-mthumb \
@@ -58,7 +60,6 @@ set(CMAKE_EXE_LINKER_FLAGS " ${CMAKE_EXE_LINKER_FLAGS}\
 		-T${CMAKE_CURRENT_SOURCE_DIR}/py32f002bx5.ld \
 		-Wl,--warn-common \
 		-Wl,-Map,${PROJECT_NAME}.map \
-		-specs nano.specs \
 		")
 
 set(BUILD_SHARED_LIBS OFF)
