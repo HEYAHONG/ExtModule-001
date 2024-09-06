@@ -82,6 +82,7 @@ include_directories(
 ../../3rdparty/HCppBox/master/hbox
 ../../3rdparty/HCppBox/master/hbox/cpp
 ../driver
+../applications/
 )
 #添加工程文件
 file(GLOB C_CXX_FILES
@@ -90,8 +91,10 @@ file(GLOB C_CXX_FILES
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Src/*.c
 ../*.c
 ../../3rdparty/HCppBox/master/hbox/*.c
+../../3rdparty/HCppBox/master/hbox/modbus/*.c
 ../../3rdparty/HCppBox/master/hbox/cpp/*.c
 ../driver/*.c
+../applications/*.c
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.cpp
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.cpp
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Src/*.cpp
@@ -99,6 +102,7 @@ file(GLOB C_CXX_FILES
 ../../3rdparty/HCppBox/master/hbox/*.cpp
 ../../3rdparty/HCppBox/master/hbox/cpp/*.cpp
 ../driver/*.cpp
+../applications/*.cpp
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.h
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.h
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Inc/*.h
@@ -106,6 +110,7 @@ file(GLOB C_CXX_FILES
 ../../3rdparty/HCppBox/master/hbox/*.h
 ../../3rdparty/HCppBox/master/hbox/cpp/*.h
 ../driver/*.h
+../applications/*.h
 *.s
 *.h
 *.c

@@ -312,7 +312,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>7</Optim>
+            <Optim>1</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -380,6 +380,16 @@
       </TargetOption>
       <Groups>
         <Group>
+          <GroupName>applications</GroupName>
+          <Files>
+            <File>
+              <FileName>modbus_rtu.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\applications\modbus_rtu.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>startup</GroupName>
           <Files>
             <File>
@@ -411,6 +421,11 @@
               <FileName>startup_py32f002bxx.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\startup_py32f002bxx.s</FilePath>
+            </File>
+            <File>
+              <FileName>syscalls.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\syscalls.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -667,6 +682,31 @@
               <FileType>8</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\cpp\hsoftdog.cpp</FilePath>
             </File>
+            <File>
+              <FileName>crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\HCppBox\hbox\modbus\crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\HCppBox\hbox\modbus\data.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\HCppBox\hbox\modbus\rtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtu_slave_tiny.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\HCppBox\hbox\modbus\rtu_slave_tiny.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\HCppBox\hbox\modbus\tcp.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -676,6 +716,11 @@
               <FileName>wdt.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\driver\wdt.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>uart.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\driver\uart.cpp</FilePath>
             </File>
           </Files>
         </Group>

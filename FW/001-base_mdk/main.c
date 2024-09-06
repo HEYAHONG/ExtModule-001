@@ -34,7 +34,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-HSTACKLESSCOROUTINE_DECLARE_COROUTINE(wdt)
+HSTACKLESSCOROUTINE_DECLARE_COROUTINE(wdt);
+HSTACKLESSCOROUTINE_DECLARE_COROUTINE(uart);
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -59,6 +60,9 @@ int main(void)
             //run watchdog
             HSTACKLESSCOROUTINE_ENTRY(wdt);
             hstacklesscoroutine_coroutine_restart(HSTACKLESSCOROUTINE_GET_GLOBAL_CCB(wdt));
+        }
+        {
+            HSTACKLESSCOROUTINE_ENTRY(uart);
         }
     }
 }
