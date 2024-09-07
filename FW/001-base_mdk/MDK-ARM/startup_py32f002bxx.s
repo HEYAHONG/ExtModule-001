@@ -35,6 +35,10 @@
 ;******************************************************************************
 ;* <<< Use Configuration Wizard in Context Menu >>>
 
+;内存信息
+IRAM1_Start		EQU		0x20000000
+IRAM1_Size		EQU		0x00000C00
+
 ; Amount of memory (in bytes) allocated for Stack
 ; Tailor this value to your application needs
 ; <h> Stack Configuration
@@ -45,8 +49,10 @@ Stack_Size      EQU     0x00000600
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
-__initial_sp
-
+;初始栈地址自动分配（默认）
+;__initial_sp
+;初始栈地址直接分配到内存末尾,便于裸机开发(可利用未使用的空间，但缺少灵活性（若芯片发生改变，需要手动调整汇编代码）)
+__initial_sp	EQU 	IRAM1_Start+IRAM1_Size
 
 ; <h> Heap Configuration
 ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
