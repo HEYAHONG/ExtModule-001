@@ -83,7 +83,7 @@ if(HAL_UART_Receive((UART_HandleTypeDef *)HSTACKLESSCOROUTINE_GET_CURRENT_EVENT(
 else
 {
     UART_HandleTypeDef * Handle=(UART_HandleTypeDef *)HSTACKLESSCOROUTINE_GET_CURRENT_EVENT()->eventparam;
-    hdefaults_tick_t timeout=1000*7/2/Handle->Init.BaudRate;//3.5字符时间
+    hdefaults_tick_t timeout=1000*7/2/(Handle->Init.BaudRate/10);//3.5字符时间
     if(timeout < 1)
     {
         timeout=1;
