@@ -49,6 +49,7 @@ static __IO size_t modbus_rx_index=0;
 static hdefaults_tick_t last_tick=0;
 HSTACKLESSCOROUTINE_BLOCK_START(modbus_rtu)
 //初始化modbus参数
+ctx=modbus_rtu_slave_tiny_context_default();
 ctx.addr=MODBUS_NODE_ADDRESS_DEFAULT;
 ctx.buffer=(uint8_t *)hdefaults_malloc(MODBUS_RTU_MAX_ADU_LENGTH,NULL);//申请发送缓存
 modbus_rx_buffer=(uint8_t *)hdefaults_malloc(MODBUS_RTU_MAX_ADU_LENGTH,NULL);

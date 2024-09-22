@@ -30,4 +30,4 @@
 
 ## UART
 
-默认情况下运行[modbus](https://modbus.org) rtu从机。
+默认情况下运行[modbus](https://modbus.org) rtu从机。串口参数115200 8N1,modbus rtu从机地址默认为1.
