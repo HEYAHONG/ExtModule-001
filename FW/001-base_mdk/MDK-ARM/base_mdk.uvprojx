@@ -782,6 +782,11 @@
               <FileType>8</FileType>
               <FilePath>..\driver\uart.cpp</FilePath>
             </File>
+            <File>
+              <FileName>gpio.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\driver\gpio.cpp</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

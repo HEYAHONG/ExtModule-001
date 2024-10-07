@@ -14,27 +14,100 @@ static void    reply(modbus_rtu_slave_tiny_context_t* ctx,const uint8_t *adu,siz
 }
 static bool    read_coil(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr)
 {
+    if(addr < 16)
+    {
+        //GPIOA
+        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0<<(addr));
+    }
+    if(addr < 16*2)
+    {
+        //GPIOB
+        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0<<(addr-16));
+    }
+    if(addr < 16*3)
+    {
+        //GPIOC
+        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_0<<(addr-16*2));
+    }
     return addr%2!=0;
 }
 static bool    read_discrete_input(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr)
 {
     return addr%2==0;
 }
+static modbus_data_register_t  holding_registers[6]= {0};
 static modbus_data_register_t  read_holding_register(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr)
 {
-    return addr+1;
+    if(addr < sizeof(holding_registers)/sizeof(holding_registers[0]))
+    {
+        return holding_registers[addr];
+    }
+    return 0xDEAD;
 }
 static modbus_data_register_t  read_input_register(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr)
 {
-    return addr+2;
+    if(addr == 0)
+    {
+        return HAL_GetUIDw0();
+    }
+    if(addr == 1)
+    {
+        return HAL_GetUIDw0()>>16;
+    }
+    if(addr == 2)
+    {
+        return HAL_GetUIDw1();
+    }
+    if(addr == 3)
+    {
+        return HAL_GetUIDw1()>>16;
+    }
+    if(addr == 4)
+    {
+        return HAL_GetUIDw2();
+    }
+    if(addr == 5)
+    {
+        return HAL_GetUIDw2()>>16;
+    }
+    return 0xBEEF;
 }
 static void  write_coil(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr,bool value)
 {
-
+    if(addr < 16)
+    {
+        //GPIOA
+        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0<<(addr),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+    }
+    if(addr < 16*2)
+    {
+        //GPIOB
+        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0<<(addr-16),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+    }
+    if(addr < 16*3)
+    {
+        //GPIOC
+        HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0<<(addr-16*2),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+    }
 }
 static void  write_holding_register(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr,modbus_data_register_t value)
 {
+    if(addr < sizeof(holding_registers)/sizeof(holding_registers[0]))
+    {
+        holding_registers[addr]=value;
+    }
+}
 
+static bool check_anycast_condition(modbus_rtu_slave_tiny_context_t* ctx)
+{
+    for(size_t i=0; i<6; i++)
+    {
+        if(holding_registers[i]!=read_input_register(ctx,i))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 //modbus上下文
@@ -66,6 +139,14 @@ ctx.read_holding_register=read_holding_register;
 ctx.read_input_register=read_input_register;
 ctx.write_coil=write_coil;
 ctx.write_holding_register=write_holding_register;
+ctx.check_anycast_condition=check_anycast_condition;
+{
+    //初始化保持寄存器
+    for(size_t i=0; i<sizeof(holding_registers)/sizeof(holding_registers[0]); i++)
+    {
+        holding_registers[i]=read_input_register(&ctx,i);
+    }
+}
 hstacklesscoroutine_yield_with_label(MODBUS_RTU_LOOP_START)
 if(HAL_UART_Receive((UART_HandleTypeDef *)HSTACKLESSCOROUTINE_GET_CURRENT_EVENT()->eventparam,&modbus_rx_buffer[modbus_rx_index],1,0)==HAL_OK)
 {

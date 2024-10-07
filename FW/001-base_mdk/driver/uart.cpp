@@ -41,7 +41,7 @@ static void uart_init()
         if (HAL_UART_Init(&UartHandle) != HAL_OK)
         {
             //´®¿Ú³õÊ¼»¯Ê§°Ü
-						while(true);
+            while(true);
         }
     }
 }

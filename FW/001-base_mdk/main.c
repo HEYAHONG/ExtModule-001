@@ -36,6 +36,7 @@
 /* Private variables ---------------------------------------------------------*/
 HSTACKLESSCOROUTINE_DECLARE_COROUTINE(wdt);
 HSTACKLESSCOROUTINE_DECLARE_COROUTINE(uart);
+HSTACKLESSCOROUTINE_DECLARE_COROUTINE(gpio);
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -56,6 +57,9 @@ int main(void)
     /* infinite loop */
     while (1)
     {
+        {
+            HSTACKLESSCOROUTINE_ENTRY(gpio);
+        }
         {
             //run watchdog
             HSTACKLESSCOROUTINE_ENTRY(wdt);
