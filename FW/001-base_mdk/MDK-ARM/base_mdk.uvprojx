@@ -707,6 +707,66 @@
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\tcp.c</FilePath>
             </File>
+            <File>
+              <FileName>io_interface.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\io_interface.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtu_master.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\rtu_master.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_client.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\tcp_client.c</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_gateway_server.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\tcp_gateway_server.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_cjson.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_cjson.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_cjsonutils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_cjsonutils.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_pb_common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_pb_common.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_pb_decode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_pb_decode.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_pb_encode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_pb_encode.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_printf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_printf.c</FilePath>
+            </File>
+            <File>
+              <FileName>hbase64.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hbase64.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

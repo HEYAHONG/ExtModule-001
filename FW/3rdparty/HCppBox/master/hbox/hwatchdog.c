@@ -43,41 +43,33 @@ static struct
 } hwatchdog_dog = {0};
 
 
-static hwatchdog_tick_t tick_get()
-{
-    if((sizeof(hwatchdog_tick_t)) > (sizeof(hdefaults_tick_t)))
-    {
-        //不使用默认节拍获取
-        return 0;
-    }
-    return hdefaults_tick_get();
-}
+
 
 static void check_watchdog_parameter()
 {
     if(hwatchdog_dog.mem_alloc==NULL)
     {
-        hwatchdog_dog.mem_alloc=hdefaults_malloc;
+        hwatchdog_dog.mem_alloc=hdefaults_get_api_table()->mem_alloc;
     }
 
     if(hwatchdog_dog.mem_free==NULL)
     {
-        hwatchdog_dog.mem_free=hdefaults_free;
+        hwatchdog_dog.mem_free=hdefaults_get_api_table()->mem_free;
     }
 
     if(hwatchdog_dog.mutex_lock==NULL)
     {
-        hwatchdog_dog.mutex_lock=hdefaults_mutex_lock;
+        hwatchdog_dog.mutex_lock=hdefaults_get_api_table()->mutex_lock;
     }
 
     if(hwatchdog_dog.mutex_unlock==NULL)
     {
-        hwatchdog_dog.mutex_unlock=hdefaults_mutex_unlock;
+        hwatchdog_dog.mutex_unlock=hdefaults_get_api_table()->mutex_unlock;
     }
 
     if(hwatchdog_dog.sys_tick_ms==NULL)
     {
-        hwatchdog_dog.sys_tick_ms=tick_get;
+        hwatchdog_dog.sys_tick_ms=hdefaults_get_api_table()->tick_get;
     }
 }
 
