@@ -17,17 +17,17 @@ static bool    read_coil(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_addres
     if(addr < 16)
     {
         //GPIOA
-        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0<<(addr));
+        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0<<(addr%16));
     }
     if(addr < 16*2)
     {
         //GPIOB
-        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0<<(addr-16));
+        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0<<(addr%16));
     }
     if(addr < 16*3)
     {
         //GPIOC
-        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_0<<(addr-16*2));
+        return GPIO_PIN_RESET!=HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_0<<(addr%16));
     }
     return addr%2!=0;
 }
@@ -77,17 +77,20 @@ static void  write_coil(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address
     if(addr < 16)
     {
         //GPIOA
-        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0<<(addr),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0<<(addr%16),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+        return;
     }
     if(addr < 16*2)
     {
         //GPIOB
-        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0<<(addr-16),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0<<(addr%16),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+        return;
     }
     if(addr < 16*3)
     {
         //GPIOC
-        HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0<<(addr-16*2),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC,GPIO_PIN_0<<(addr%16),value?GPIO_PIN_SET:GPIO_PIN_RESET);
+        return;
     }
 }
 static void  write_holding_register(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr,modbus_data_register_t value)
