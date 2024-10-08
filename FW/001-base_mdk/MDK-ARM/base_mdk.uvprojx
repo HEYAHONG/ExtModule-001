@@ -312,7 +312,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>2</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -786,6 +786,11 @@
               <FileName>gpio.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\driver\gpio.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>adc.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\driver\adc.cpp</FilePath>
             </File>
           </Files>
         </Group>

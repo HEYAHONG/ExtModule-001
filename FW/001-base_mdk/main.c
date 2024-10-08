@@ -37,6 +37,7 @@
 HSTACKLESSCOROUTINE_DECLARE_COROUTINE(wdt);
 HSTACKLESSCOROUTINE_DECLARE_COROUTINE(uart);
 HSTACKLESSCOROUTINE_DECLARE_COROUTINE(gpio);
+HSTACKLESSCOROUTINE_DECLARE_COROUTINE(adc);
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -59,6 +60,9 @@ int main(void)
     {
         {
             HSTACKLESSCOROUTINE_ENTRY(gpio);
+        }
+        {
+            HSTACKLESSCOROUTINE_ENTRY(adc);
         }
         {
             //run watchdog

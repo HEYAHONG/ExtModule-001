@@ -44,6 +44,7 @@ static modbus_data_register_t  read_holding_register(modbus_rtu_slave_tiny_conte
     }
     return 0xDEAD;
 }
+extern "C" uint16_t ADCConvert(uint8_t channel);
 static modbus_data_register_t  read_input_register(modbus_rtu_slave_tiny_context_t* ctx,modbus_data_address_t addr)
 {
     if(addr == 0)
@@ -69,6 +70,11 @@ static modbus_data_register_t  read_input_register(modbus_rtu_slave_tiny_context
     if(addr == 5)
     {
         return HAL_GetUIDw2()>>16;
+    }
+    if(addr > 5 && addr < 16)
+    {
+        //[6 15]±íÊ¾[ADC_Channel_0 ADC_Channel_10]
+        return ADCConvert(addr-6);
     }
     return 0xBEEF;
 }
