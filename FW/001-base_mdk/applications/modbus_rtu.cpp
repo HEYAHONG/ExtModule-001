@@ -71,7 +71,7 @@ static modbus_data_register_t  read_input_register(modbus_rtu_slave_tiny_context
     {
         return HAL_GetUIDw2()>>16;
     }
-    if(addr > 5 && addr < 16)
+    if(addr > 5 && addr < 17)
     {
         //[6 15]±íÊ¾[ADC_Channel_0 ADC_Channel_10]
         return ADCConvert(addr-6);
