@@ -683,51 +683,6 @@
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\cpp\hsoftdog.cpp</FilePath>
             </File>
             <File>
-              <FileName>crc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\crc.c</FilePath>
-            </File>
-            <File>
-              <FileName>data.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\data.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\rtu.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtu_slave_tiny.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\rtu_slave_tiny.c</FilePath>
-            </File>
-            <File>
-              <FileName>tcp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\tcp.c</FilePath>
-            </File>
-            <File>
-              <FileName>io_interface.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\io_interface.c</FilePath>
-            </File>
-            <File>
-              <FileName>rtu_master.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\rtu_master.c</FilePath>
-            </File>
-            <File>
-              <FileName>tcp_client.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\tcp_client.c</FilePath>
-            </File>
-            <File>
-              <FileName>tcp_gateway_server.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\tcp_gateway_server.c</FilePath>
-            </File>
-            <File>
               <FileName>h3rdparty.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty.c</FilePath>
@@ -771,6 +726,51 @@
               <FileName>hsimulator.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\hsimulator.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_data.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_io_interface.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_io_interface.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_rtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_rtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_rtu_master.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_rtu_master.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_rtu_slave_tiny.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_rtu_slave_tiny.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_tcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_tcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_tcp_client.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_tcp_client.c</FilePath>
+            </File>
+            <File>
+              <FileName>hmodbus_tcp_gateway_server.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_tcp_gateway_server.c</FilePath>
             </File>
           </Files>
         </Group>

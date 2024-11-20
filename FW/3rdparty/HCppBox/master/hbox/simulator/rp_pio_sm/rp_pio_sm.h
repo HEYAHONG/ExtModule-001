@@ -28,6 +28,7 @@ size_t hs_rp_pio_sm_size(void);
 
 typedef enum
 {
+    HS_RP_PIO_SM_IO_RESET,//IO复位，无参数
     HS_RP_PIO_SM_IO_READ_INSTRUCTION,//指令读取，传入PC的值(通过*val访问)，传出指令（低16位）
     HS_RP_PIO_SM_IO_PUSH_RX_FIFO,//写RX_FIFO，写32位数据
     HS_RP_PIO_SM_IO_READ_MOV_RX_FIFO_0,//读RX_FIFO，写32位数据
@@ -136,6 +137,7 @@ enum
     HS_RP_PIO_SM_INS_CLASS_SET=7            //SET指令
 };
 
+//注意：此布局为小端模式的布局，大端模式在内部会进行修复
 typedef union
 {
     uint16_t Instruction;
@@ -228,6 +230,109 @@ void hs_rp_pio_sm_tick(hs_rp_pio_sm_t *sm,size_t cycles);
  *
  */
 void hs_rp_pio_sm_reset(hs_rp_pio_sm_t *sm);
+
+
+typedef struct
+{
+    uint32_t fifo[4];//PIO状态机中FIFO深度为4
+    struct
+    {
+        uint32_t read_ptr:2;
+        uint32_t write_ptr:2;
+        uint32_t is_empty:1;//当读写指针相同时，使用此标志判断是否为空
+        uint32_t is_full:1;//当读写指针相同时，使用此标志判断是否为满
+        /*
+        *关闭FIFO，直接对fifo数组随机访问,
+        *一般用于HS_RP_PIO_SM_INS_CLASS_PUSH_MOV_PULL中的MOV指令.
+        *io操作对应HS_RP_PIO_SM_IO_READ_MOV_RX_FIFO_0~HS_RP_PIO_SM_IO_READ_MOV_RX_FIFO_3、HS_RP_PIO_SM_IO_WRITE_MOV_RX_FIFO_0~HS_RP_PIO_SM_IO_WRITE_MOV_RX_FIFO_3
+        *此时对FIFO的PUSH与PULL均无效
+        */
+        uint32_t disable_fifo:1;
+    };
+} hs_rp_pio_sm_fifo_t;
+
+/** \brief 状态机FIFO初始化,注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param sm_fifo hs_rp_pio_sm_fifo_t* 状态机FIFO指针
+ *
+ */
+void hs_rp_pio_sm_fifo_init(hs_rp_pio_sm_fifo_t *sm_fifo);
+
+/** \brief FIFO是否为空
+ *
+ * \param sm_fifo hs_rp_pio_sm_fifo_t* 状态机FIFO指针
+ * \return bool FIFO是否为空,sm_fifo为NULL时返回false
+ *
+ */
+bool hs_rp_pio_sm_fifo_is_empty(hs_rp_pio_sm_fifo_t *sm_fifo);
+
+/** \brief FIFO是否为满
+ *
+ * \param sm_fifo hs_rp_pio_sm_fifo_t* 状态机FIFO指针
+ * \return bool FIFO是否为满,sm_fifo为NULL时返回true
+ *
+ */
+bool hs_rp_pio_sm_fifo_is_full(hs_rp_pio_sm_fifo_t *sm_fifo);
+
+/** \brief 写FIFO，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param sm_fifo hs_rp_pio_sm_fifo_t* 状态机FIFO指针
+ * \param data uint32_t 待写入的数据
+ * \return bool 是否写入成功
+ *
+ */
+bool hs_rp_pio_sm_fifo_push(hs_rp_pio_sm_fifo_t *sm_fifo,uint32_t data);
+
+/** \brief 读FIFO，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param sm_fifo hs_rp_pio_sm_fifo_t* 状态机FIFO指针
+ * \param data uint32_t* 待读取的数据指针
+ * \return bool 是否读取成功
+ *
+ */
+bool hs_rp_pio_sm_fifo_pull(hs_rp_pio_sm_fifo_t *sm_fifo,uint32_t* data);
+
+typedef struct
+{
+    uint16_t code[32];//32条程序代码
+    struct //程序相关的配置
+    {
+        uint32_t pull_thresh:5;//PULL指令阈值,0代表阈值为32.
+        uint32_t push_thresh:5;//PUSH指令阈值,0代表阈值为32.
+        uint32_t out_shiftdir:1;//1=右移，0=左移，默认应当为1
+        uint32_t in_shiftdir:1;//1=右移，0=左移，默认应当为1
+        uint32_t autopull:1;//1=自动pull
+        uint32_t autopush:1;//1=自动push
+        uint32_t disable_rxfifo:1;//关闭RX FIFO，使用随机访问
+        uint32_t sideset_cnt:3;//,sideset特性，0~5
+    };
+} hs_rp_pio_sm_memory_t;
+
+/** \brief 程序内存初始化。
+ *
+ * \param sm_mem hs_rp_pio_sm_memory_t* 状态机Memory指针
+ *
+ */
+void hs_rp_pio_sm_memory_init(hs_rp_pio_sm_memory_t *sm_mem);
+
+/** \brief 加载内存配置，通常在io回调的复位函数中调用
+ *
+ * \param sm hs_rp_pio_sm_t* 状态机指针
+ * \param sm_rxfifo hs_rp_pio_sm_fifo_t* 状态机Rx FIFO指针,可为NULL
+ * \param sm_mem hs_rp_pio_sm_memory_t* 状态机Memory指针
+ *
+ */
+void hs_rp_pio_sm_load_memory_cfg(hs_rp_pio_sm_t *sm,hs_rp_pio_sm_fifo_t *sm_rxfifo,const hs_rp_pio_sm_memory_t *sm_mem);
+
+/** \brief 程序，主要将TX FIFO中的数据（无数据则stall）中的最低位通过PINS发送出去。
+ *
+ * loop:
+ *      pull
+ *      out pins, 1
+ *      jmp loop
+ *
+ */
+extern const hs_rp_pio_sm_memory_t hs_rp_pio_sm_program_simple_pins_out;
 
 #ifdef __cplusplus
 }

@@ -199,12 +199,96 @@ void hs_rp_pio_sm_status(hs_rp_pio_sm_t *sm,hs_rp_pio_sm_status_opt_t opt,uint32
     }
 }
 
+static void hs_rp_pio_sm_exec_bigendian_fix(hs_rp_pio_sm_instruction_t *instruction)
+{
+    if(instruction!=NULL)
+    {
+        uint16_t instruction_value=instruction->Instruction;
+        instruction->Instruction=0x8000;
+        if(instruction->Instruction_Class!=0)
+        {
+            //小端模式，复原指令
+            instruction->Instruction=instruction_value;
+        }
+        else
+        {
+            //大端模式，重新解析指令
+            instruction->Instruction=0;
+            instruction->Instruction_Class=((instruction_value>>13)&0x7);
+            instruction->Delay_SideSet=((instruction_value>>8)&0x1F);
+            switch(instruction->Instruction_Class)
+            {
+            case HS_RP_PIO_SM_INS_CLASS_JMP:           //JMP指令
+            {
+                instruction->INS_JMP.Condition=((instruction_value>>5)&0x7);
+                instruction->INS_JMP.Address=((instruction_value)&0x1F);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_WAIT:          //WAIT指令
+            {
+                instruction->INS_WAIT.Pol=((instruction_value>>7)&0x1);
+                instruction->INS_WAIT.Source=((instruction_value>>5)&0x3);
+                instruction->INS_WAIT.Index=((instruction_value)&0x1F);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_IN:            //IN指令
+            {
+                instruction->INS_IN.Source=((instruction_value>>5)&0x7);
+                instruction->INS_IN.Bit_count=((instruction_value)&0x1F);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_OUT:           //OUT指令
+            {
+                instruction->INS_OUT.Destination=((instruction_value>>5)&0x7);
+                instruction->INS_OUT.Bit_count=((instruction_value)&0x1F);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_PUSH_MOV_PULL: //PUSH、MOV、PULL指令
+            {
+                instruction->INS_PUSH_MOV_PULL.Pull=((instruction_value>>7)&0x1);
+                instruction->INS_PUSH_MOV_PULL.ifF_ifE=((instruction_value>>6)&0x1);
+                instruction->INS_PUSH_MOV_PULL.Blk=((instruction_value>>5)&0x1);
+                instruction->INS_PUSH_MOV_PULL.Mov=((instruction_value>>4)&0x1);
+                instruction->INS_PUSH_MOV_PULL.Idxl=((instruction_value>>3)&0x1);
+                instruction->INS_PUSH_MOV_PULL.Index=((instruction_value)&0x3);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_MOV:           //MOV指令
+            {
+                instruction->INS_MOV.Destination=((instruction_value>>5)&0x7);
+                instruction->INS_MOV.Op=((instruction_value>>3)&0x3);
+                instruction->INS_MOV.Source=((instruction_value)&0x7);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_IRQ:           //IRQ指令
+            {
+                instruction->INS_IRQ.Clr=((instruction_value>>6)&0x1);
+                instruction->INS_IRQ.Wait=((instruction_value>>5)&0x1);
+                instruction->INS_IRQ.IdxMode=((instruction_value>>3)&0x3);
+                instruction->INS_IRQ.Index=((instruction_value)&0x7);
+            }
+            break;
+            case HS_RP_PIO_SM_INS_CLASS_SET:           //SET指令
+            {
+                instruction->INS_SET.Destination=((instruction_value>>5)&0x7);
+                instruction->INS_SET.Data=((instruction_value)&0x1F);
+            }
+            break;
+            }
+        }
+    }
+}
+
 void hs_rp_pio_sm_exec(hs_rp_pio_sm_t *sm,hs_rp_pio_sm_instruction_t instruction)
 {
     if(sm==NULL || sm->io==NULL)
     {
         return;
     }
+
+    //大端模式修复
+    hs_rp_pio_sm_exec_bigendian_fix(&instruction);
+
     //Delay Sideset特性
     if(sm->sideset_cnt > 0)
     {
@@ -1321,5 +1405,199 @@ void hs_rp_pio_sm_reset(hs_rp_pio_sm_t *sm)
         sm->out_shiftdir=1;
         //默认右移
         sm->in_shiftdir=1;
+
+        //复位IO
+        if(sm->io!=NULL)
+        {
+            uint32_t val=0;
+            sm->io(sm,HS_RP_PIO_SM_IO_RESET,&val,sm->usr);
+        }
     }
 }
+
+
+void hs_rp_pio_sm_fifo_init(hs_rp_pio_sm_fifo_t *sm_fifo)
+{
+    if(sm_fifo!=NULL)
+    {
+        memset(sm_fifo,0,sizeof(hs_rp_pio_sm_fifo_t));
+        sm_fifo->is_empty=1;
+    }
+}
+
+bool hs_rp_pio_sm_fifo_is_empty(hs_rp_pio_sm_fifo_t *sm_fifo)
+{
+    if(sm_fifo!=NULL)
+    {
+        if(sm_fifo->read_ptr==sm_fifo->write_ptr)
+        {
+            return sm_fifo->is_empty!=0;
+        }
+    }
+    return false;
+}
+
+bool hs_rp_pio_sm_fifo_is_full(hs_rp_pio_sm_fifo_t *sm_fifo)
+{
+    if(sm_fifo!=NULL)
+    {
+        if(sm_fifo->read_ptr==sm_fifo->write_ptr)
+        {
+            return sm_fifo->is_full!=0;
+        }
+    }
+    return true;
+}
+
+bool hs_rp_pio_sm_fifo_push(hs_rp_pio_sm_fifo_t *sm_fifo,uint32_t data)
+{
+    if(sm_fifo!=NULL)
+    {
+        if(sm_fifo->disable_fifo)
+        {
+            //已关闭FIFO
+            return false;
+        }
+
+
+        if(sm_fifo->read_ptr==sm_fifo->write_ptr)
+        {
+            if(hs_rp_pio_sm_fifo_is_full(sm_fifo))
+            {
+                return false;
+            }
+            if(hs_rp_pio_sm_fifo_is_empty(sm_fifo))
+            {
+                //正常写入
+                sm_fifo->fifo[sm_fifo->write_ptr++]=data;
+                sm_fifo->is_empty=0;
+            }
+            else
+            {
+                //写入最后一个空位
+                sm_fifo->fifo[sm_fifo->write_ptr]=data;
+                sm_fifo->is_full=1;
+            }
+        }
+        else
+        {
+            //读写指针不相等，直接写入
+            sm_fifo->fifo[sm_fifo->write_ptr++]=data;
+            if(sm_fifo->read_ptr==sm_fifo->write_ptr)
+            {
+                sm_fifo->is_full=1;
+            }
+        }
+
+        return true;
+    }
+    return false;
+}
+
+bool hs_rp_pio_sm_fifo_pull(hs_rp_pio_sm_fifo_t *sm_fifo,uint32_t* data)
+{
+    if(sm_fifo!=NULL && data!=NULL)
+    {
+        if(sm_fifo->disable_fifo)
+        {
+            //已关闭FIFO
+            return false;
+        }
+
+
+
+        if(sm_fifo->read_ptr==sm_fifo->write_ptr)
+        {
+            if(hs_rp_pio_sm_fifo_is_empty(sm_fifo))
+            {
+                return false;
+            }
+
+            if(hs_rp_pio_sm_fifo_is_full(sm_fifo))
+            {
+                //正常读取
+                (*data)=sm_fifo->fifo[sm_fifo->read_ptr++];
+                sm_fifo->is_full=0;
+            }
+            else
+            {
+                //读取最后一个有效数据
+                (*data)=sm_fifo->fifo[sm_fifo->read_ptr];
+                sm_fifo->is_empty=1;
+            }
+        }
+        else
+        {
+            //读写指针不相等，直接读取
+            (*data)=sm_fifo->fifo[sm_fifo->read_ptr++];
+            if(sm_fifo->read_ptr==sm_fifo->write_ptr)
+            {
+                sm_fifo->is_empty=1;
+            }
+        }
+
+        return true;
+    }
+    return false;
+}
+
+void hs_rp_pio_sm_memory_init(hs_rp_pio_sm_memory_t *sm_mem)
+{
+    if(sm_mem!=NULL)
+    {
+        memset(sm_mem,0,sizeof(hs_rp_pio_sm_memory_t));
+        //默认设置
+        sm_mem->in_shiftdir=1;
+        sm_mem->out_shiftdir=1;
+    }
+}
+
+void hs_rp_pio_sm_load_memory_cfg(hs_rp_pio_sm_t *sm,hs_rp_pio_sm_fifo_t *sm_rxfifo,const hs_rp_pio_sm_memory_t *sm_mem)
+{
+    if(sm_mem!=NULL)
+    {
+        if(sm_rxfifo!=NULL)
+        {
+            sm_rxfifo->disable_fifo=sm_mem->disable_rxfifo;
+        }
+
+        if(sm!=NULL)
+        {
+            sm->pull_thresh=sm_mem->pull_thresh;
+            sm->push_thresh=sm_mem->push_thresh;
+            sm->out_shiftdir=sm_mem->out_shiftdir;
+            sm->in_shiftdir=sm_mem->in_shiftdir;
+            sm->autopull=sm_mem->autopull;
+            sm->autopush=sm_mem->autopush;
+            sm->sideset_cnt=(sm_mem->sideset_cnt%6);
+        }
+    }
+}
+
+
+/** \brief 程序，主要将TX FIFO中的数据（无数据则stall）中的最低位通过PINS发送出去。。
+ *
+ * loop:
+ *      pull
+ *      out pins, 1
+ *      jmp loop
+ *
+ */
+const hs_rp_pio_sm_memory_t hs_rp_pio_sm_program_simple_pins_out=
+{
+    {
+        0x80a0, //  0: pull   block
+        0x6001, //  1: out    pins, 1
+        0x0000  //  2: jmp    0
+    },
+    {
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+    }
+};
