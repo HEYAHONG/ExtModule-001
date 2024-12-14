@@ -1,25 +1,24 @@
 /***************************************************************
- * Name:      hsimulator.h
- * Purpose:   声明hsimulator接口
+ * Name:      hgui.h
+ * Purpose:   声明hgui接口
  * Author:    HYH (hyhsystem.cn)
- * Created:   2024-11-17
+ * Created:   2024-11-24
  * Copyright: HYH (hyhsystem.cn)
  * License:   MIT
  **************************************************************/
-#ifndef __HSIMULATOR_H__
-#define __HSIMULATOR_H__
+#ifndef __HGUI_H__
+#define __HGUI_H__
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif // __cplusplus
 
-#include "simulator/rp_pio_sm/rp_pio_sm.h"
-#include "simulator/mcs_51/mcs_51.h"
+#include "gui/hgui_gui_gui.h"
 
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __HSIMULATOR_H__
+#endif // __HGUI_H__
 

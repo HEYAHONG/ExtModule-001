@@ -772,6 +772,31 @@
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\modbus\hmodbus_tcp_gateway_server.c</FilePath>
             </File>
+            <File>
+              <FileName>hgui_gui_common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\gui\hgui_gui_common.c</FilePath>
+            </File>
+            <File>
+              <FileName>hgui_gui_dotfont.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\gui\hgui_gui_dotfont.c</FilePath>
+            </File>
+            <File>
+              <FileName>hgui_gui_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\gui\hgui_gui_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>hgui_gui_pixel.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\gui\hgui_gui_pixel.c</FilePath>
+            </File>
+            <File>
+              <FileName>hgui_gui_xpm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\gui\hgui_gui_xpm.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

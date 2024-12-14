@@ -29,6 +29,25 @@ extern "C"
 struct heventslots; /**< heventslots前置声明 */
 typedef struct heventslots heventslots_t; /**< heventslots_t定义 */
 
+/** \brief 获取使用内部堆的heventslots的最小大小
+ *
+ * \return size_t 使用内部堆的heventslots的最小大小
+ *
+ */
+size_t heventslots_with_internal_heap_min_size(void);
+
+/** \brief 初始化heventslots_t
+ *
+ * \param  usr void* 用户指针
+ * \param  mutex_lock 加锁,不要使用第一个参数
+ * \param  mutex_unlock 解锁,不要使用第一个参数
+ * \param  mem 内存（此内存可静态分配，大小不小于heventslots_with_internal_heap_min_size()返回的值）
+ * \param  length 内存大小
+ * \return heventslots_t* heventslots_t指针
+ *
+ */
+heventslots_t * heventslots_with_internal_heap_init(void *usr,void (*mutex_lock)(void *),void (*mutex_unlock)(void *),void *mem,size_t length);
+
 /** \brief 创建heventslots_t
  *
  * \param  usr void* 用户指针

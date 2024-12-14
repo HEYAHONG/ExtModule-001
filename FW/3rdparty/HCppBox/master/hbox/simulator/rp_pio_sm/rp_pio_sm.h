@@ -324,6 +324,88 @@ void hs_rp_pio_sm_memory_init(hs_rp_pio_sm_memory_t *sm_mem);
  */
 void hs_rp_pio_sm_load_memory_cfg(hs_rp_pio_sm_t *sm,hs_rp_pio_sm_fifo_t *sm_rxfifo,const hs_rp_pio_sm_memory_t *sm_mem);
 
+
+typedef struct
+{
+    uint32_t sm[((sizeof(uintptr_t)*2+sizeof(uint32_t)*6)/sizeof(uint32_t))+(((sizeof(uintptr_t)*2+sizeof(uint32_t)*6)%sizeof(uint32_t))?1:0)];
+    hs_rp_pio_sm_memory_t memory;    //程序内存
+    hs_rp_pio_sm_fifo_t txfifo;      //用户可使用hs_rp_pio_sm_fifo_push向状态机写入数据。
+    hs_rp_pio_sm_fifo_t rxfifo;      //用户可使用hs_rp_pio_sm_fifo_pull读取状态机的数据。对于某些程序而言,可直接访问fifo内的字。
+    uint32_t pins;
+    uint32_t jmp_pin;               //位0表示JMP指令使用的PIN
+    uint32_t gpio;                  //GPIO与PINS不同，通常指未经映射的IO
+    uint32_t pindirs;
+    uint32_t sideset;               //sideset特性
+    uint32_t status;                //状态数据，一般是全0或者全1
+    uint32_t irq;                   //IRQ，一般用于状态机之间的同步
+    hs_rp_pio_io_t hook;             //Hook函数将在io操作结束时调用,sm指针可转换为pio指针,一般用于同步一些状态。
+} hs_rp_pio_t;/**< PIO,注意:此结构体用于内存比较充足的场景，内存不足时需要用户选择性实现状态机部分功能*/
+
+/** \brief PIO初始化
+ *
+ * \param pio hs_rp_pio_t*pio指针
+ * \param hook hs_rp_pio_io_t Hook函数
+ * \param usr void* 用户参数
+ *
+ */
+void hs_rp_pio_init(hs_rp_pio_t *pio,hs_rp_pio_io_t hook,void *usr);
+
+/** \brief PIO节拍,由于pio对时序要求比较高，推荐在定时器中调用此函数。注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param pio hs_rp_pio_t*pio指针
+ * \param cycles size_t 周期数,0等于无效,如需精确的时序，通常使用1作为周期数，并使用定时器调用此函数。
+ *
+ */
+void hs_rp_pio_tick(hs_rp_pio_t *pio,size_t cycles);
+
+/** \brief PIO复位(恢复默认状态与配置)，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param pio hs_rp_pio_t*pio指针
+ *
+ */
+void hs_rp_pio_reset(hs_rp_pio_t *pio);
+
+/** \brief PIO PUSH数据，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param pio hs_rp_pio_t*pio指针
+ * \param data uint32_t 数据
+ * \return bool 是否成功
+ *
+ */
+bool hs_rp_pio_push(hs_rp_pio_t *pio,uint32_t data);
+
+/** \brief PIO PULL数据，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param pio hs_rp_pio_t*pio指针
+ * \param data uint32_t* 待读取数据的指针
+ * \return bool 是否成功
+ *
+ */
+bool hs_rp_pio_pull(hs_rp_pio_t *pio,uint32_t* data);
+
+/** \brief PIO 直接写入Rx FIFO(用于部分程序)，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param pio hs_rp_pio_t* pio指针
+ * \param addr uint32_t ，内部地址，范围0～3
+ * \param data uint32_t 数据
+ * \return bool 是否成功
+ *
+ */
+bool  hs_rp_pio_rxfifo_set(hs_rp_pio_t *pio,uint32_t addr,uint32_t data);
+
+
+
+/** \brief PIO 直接读取Rx FIFO(用于部分程序)，注意：此函数不是线程安全的，必要时需要加锁。
+ *
+ * \param pio hs_rp_pio_t* pio指针
+ * \param addr uint32_t ，内部地址，范围0～3
+ * \param data uint32_t* 待读取数据的指针
+ * \return bool 是否成功
+ *
+ */
+bool  hs_rp_pio_rxfifo_get(hs_rp_pio_t *pio,uint32_t addr,uint32_t* data);
+
+
 /** \brief 程序，主要将TX FIFO中的数据（无数据则stall）中的最低位通过PINS发送出去。
  *
  * loop:
