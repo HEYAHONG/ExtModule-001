@@ -79,8 +79,6 @@ include_directories(
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Inc
 ../
-../../3rdparty/HCppBox/master/hbox
-../../3rdparty/HCppBox/master/hbox/cpp
 ../driver
 ../applications/
 )
@@ -90,17 +88,12 @@ file(GLOB C_CXX_FILES
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.c
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Src/*.c
 ../*.c
-../../3rdparty/HCppBox/master/hbox/*.c
-../../3rdparty/HCppBox/master/hbox/modbus/*.c
-../../3rdparty/HCppBox/master/hbox/cpp/*.c
 ../driver/*.c
 ../applications/*.c
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.cpp
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Include/*.cpp
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/PY32F002B_HAL_Driver/Src/*.cpp
 ../*.cpp
-../../3rdparty/HCppBox/master/hbox/*.cpp
-../../3rdparty/HCppBox/master/hbox/cpp/*.cpp
 ../driver/*.cpp
 ../applications/*.cpp
 ../../3rdparty/PY32F002B_Firmware_V1.1.2/Drivers/CMSIS/Device/PY32F0xx/Include/*.h
@@ -124,4 +117,9 @@ add_custom_command(TARGET ${PROJECT_NAME}
 	COMMAND  arm-none-eabi-objcopy --verbose -O binary ${PROJECT_NAME}.elf  ${PROJECT_NAME}.bin
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+add_subdirectory(../../3rdparty/HCppBox/master/hbox HCppBox_hbox)
+#启用hbox
+hbox_enable(${PROJECT_NAME})
+
 
