@@ -9,14 +9,9 @@
 #include "hcpprt.h"
 #include "hcompiler.h"
 #include "hdefaults.h"
+#include "h3rdparty.h"
 
-//CYGWIN当作Windows
-#ifdef __CYGWIN__
-#undef __unix__
-#ifndef WIN32
-#define WIN32 1
-#endif // WIN32
-#endif // __CYGWIN__
+
 
 /*
 通过此类判断构造函数是否被执行。
@@ -50,7 +45,7 @@ public:
 
 extern "C"
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
     //GCC环境
     typedef void(*ctors_func)();
 #ifdef WIN32
@@ -63,7 +58,7 @@ extern "C"
     //由链接脚本提供
     extern ctors_func __init_array_end[];
 #endif
-#endif // __GNUC__
+#endif
 }
 
 #endif
@@ -74,7 +69,7 @@ static void ctors_execute()
 
     if(!g_ctors_state.IsOk())
     {
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__ARMCC_VERSION)
         /*
         GCC环境中，某些SDK不提供C++构造函数支持，需要手动添加构造函数,需要链接脚本提供___init_array_start与___init_array_end符号。
         */
@@ -94,8 +89,12 @@ static void ctors_execute()
 void hcpprt_init()
 {
     /*
-    执行构造函数
-    */
+     * 初始化第三方库
+     */
+    h3rdparty_init();
+    /*
+     * 执行构造函数
+     */
     ctors_execute();
 }
 

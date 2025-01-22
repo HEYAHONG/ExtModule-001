@@ -44,7 +44,7 @@ bool hgui_gui_dotfont_show_ascii_string(const hgui_gui_dotfont_t * dotfont,const
                 {
                     if(hgui_gui_dotfont_show_char(dotfont,Char,x,y,draw_pixel,usr))
                     {
-                        if((x+dotfont->w) <= w)
+                        if((x+dotfont->w*2) <= w)
                         {
                             x+=dotfont->w;
                         }
@@ -118,7 +118,7 @@ bool hgui_gui_dotfont_show_unicode_string(const hgui_gui_dotfont_t * dotfont,con
                 {
                     if(hgui_gui_dotfont_show_char(dotfont,Char,x,y,draw_pixel,usr))
                     {
-                        if((x+dotfont->w) <= w)
+                        if((x+dotfont->w*2) <= w)
                         {
                             x+=dotfont->w;
                         }
@@ -906,7 +906,7 @@ static bool hdotfont_show_char(const hgui_gui_dotfont_t * dotfont,uint32_t Char,
     return true;
 }
 
-const hgui_gui_dotfont_hdotfont_t hgui_gui_dotfont_hdotfont(const uint8_t *const char_set[],uint32_t char_set_size,size_t font_size)
+hgui_gui_dotfont_hdotfont_t hgui_gui_dotfont_hdotfont(const uint8_t *const char_set[],uint32_t char_set_size,size_t font_size)
 {
     hgui_gui_dotfont_hdotfont_t ret= {0};
     ret.font.w=font_size;
