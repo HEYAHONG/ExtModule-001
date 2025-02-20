@@ -26,6 +26,15 @@ typedef struct hs_rp_pio_sm hs_rp_pio_sm_t;
  */
 size_t hs_rp_pio_sm_size(void);
 
+#ifndef HS_RP_PIO_SM_SIZE
+
+/** \brief hs_rp_pio_sm_t结构体大小,一般用于静态分配，注意:可能大于hs_rp_pio_sm_size()返回的值。
+ *
+ *
+ */
+#define HS_RP_PIO_SM_SIZE() ((((sizeof(uintptr_t)*2+sizeof(uint32_t)*6)/sizeof(uint32_t))+(((sizeof(uintptr_t)*2+sizeof(uint32_t)*6)%sizeof(uint32_t))?1:0))*sizeof(uint32_t))
+#endif // HS_RP_PIO_SM_SIZE
+
 typedef enum
 {
     HS_RP_PIO_SM_IO_RESET,//IO复位，无参数
@@ -327,7 +336,7 @@ void hs_rp_pio_sm_load_memory_cfg(hs_rp_pio_sm_t *sm,hs_rp_pio_sm_fifo_t *sm_rxf
 
 typedef struct
 {
-    uint32_t sm[((sizeof(uintptr_t)*2+sizeof(uint32_t)*6)/sizeof(uint32_t))+(((sizeof(uintptr_t)*2+sizeof(uint32_t)*6)%sizeof(uint32_t))?1:0)];
+    uint32_t sm[HS_RP_PIO_SM_SIZE()/sizeof(uint32_t)];
     hs_rp_pio_sm_memory_t memory;    //程序内存
     hs_rp_pio_sm_fifo_t txfifo;      //用户可使用hs_rp_pio_sm_fifo_push向状态机写入数据。
     hs_rp_pio_sm_fifo_t rxfifo;      //用户可使用hs_rp_pio_sm_fifo_pull读取状态机的数据。对于某些程序而言,可直接访问fifo内的字。
@@ -406,20 +415,11 @@ bool  hs_rp_pio_rxfifo_set(hs_rp_pio_t *pio,uint32_t addr,uint32_t data);
 bool  hs_rp_pio_rxfifo_get(hs_rp_pio_t *pio,uint32_t addr,uint32_t* data);
 
 
-/** \brief 程序，主要将TX FIFO中的数据（无数据则stall）中的最低位通过PINS发送出去。
- *
- * loop:
- *      pull
- *      out pins, 1
- *      jmp loop
- *
- */
-extern const hs_rp_pio_sm_memory_t hs_rp_pio_sm_program_simple_pins_out;
 
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __RP_PIO_SM_H__
+#endif // __HSIMLULATOR_RP_PIO_SM_H__
 
 

@@ -27,6 +27,14 @@ typedef struct hs_mcs_51_core hs_mcs_51_core_t;
  */
 size_t hs_mcs_51_core_size(void);
 
+#ifndef HS_MCS_51_CORE_SIZE
+/** \brief hs_mcs_51_core_t结构体大小,一般用于静态分配，注意:可能大于hs_mcs_51_core_size()返回的值。
+ *
+ *
+ */
+#define HS_MCS_51_CORE_SIZE()  (sizeof(uintptr_t)*2+sizeof(uint32_t)*4)
+#endif // HS_MCS_51_CORE_SIZE
+
 #ifndef HS_MCS_51_INSTRUCTION_MAX_LENGTH
 #define HS_MCS_51_INSTRUCTION_MAX_LENGTH 3  /**< 指令最长字节数,默认每次读取此长度的指令 */
 #endif // HS_MCS_51_INSTRUCTION_MAX_SIZE
@@ -43,7 +51,11 @@ typedef enum
     HS_MCS_51_IO_WRITE_EXTERNAL_RAM,    //写入外部RAM(最高64KB)
     HS_MCS_51_IO_BREAKPOINT,            //由MCS-51的保留指令（0xA5）触发，可用于自定义的指令(默认这是一条单周期单字节指令)，通过地址传入PC的值（下一条指令地址），通过数据传出相对跳转的地址(有符号数)。
     HS_MCS_51_IO_INTERRUPT_ENTER,       //中断进入，地址为中断号，数据为运行级别
-    HS_MCS_51_IO_INTERRUPT_EXIT         //中断退出，数据为运行级别,通常用于自动清除某些标志
+    HS_MCS_51_IO_INTERRUPT_EXIT,        //中断退出，地址为中断号，数据为运行级别,通常用于自动清除某些标志
+    HS_MCS_51_IO_INSTRUCTION_ENTER,     //指令进入,开始执行指令时调用。通常用于调试或者用户处理指令。地址为当前PC值,数据为已经执行的指令。
+    HS_MCS_51_IO_INSTRUCTION_EXIT,      //指令退出,结束执行指令时调用。通常用于调试或者用户处理指令。地址为当前PC值(可能已被指令修改),数据为已经执行的指令。
+    HS_MCS_51_IO_TICK_ENTER,            //节拍进入,时钟节拍开始时调用。地址为当前PC值,数据为剩余节拍数(类型为size_t)。
+    HS_MCS_51_IO_TICK_EXIT              //节拍退出,时钟节拍结束时调用。地址为当前PC值,数据为剩余节拍数(类型为size_t)。
 } hs_mcs_51_io_opt_t;
 
 /** \brief MCS-51 IO操作
@@ -131,7 +143,7 @@ typedef enum
 /** \brief MCS-51内核设置中断到中断扫描表（将在下一个周期执行中断），执行后自动清除，一般由外设调用，注意：此函数不是线程安全的，必要时需要加锁。
  *
  * \param core hs_mcs_51_core_t* MCS-51 内核指针
- * \param number hs_mcs_51_interrupt_number_t 中断号
+ * \param number hs_mcs_51_interrupt_number_t 中断号,注意：中断使能与中断优先级由用户实现，中断号通过此函数设置后，会在下一条指令跳转至中断处理函数。
  * \param is_high_priority bool 是否是高优先级中断
  *
  */
@@ -140,7 +152,7 @@ void hs_mcs_51_core_interrupt_set(hs_mcs_51_core_t * core,hs_mcs_51_interrupt_nu
 /** \brief MCS-51内核获取中断嵌套层数
  *
  * \param core hs_mcs_51_core_t* 内核指针
- * \return int 嵌套层数,失败返回-1
+ * \return int 嵌套层数,失败返回-1,0、1、2表示正在运行的中断个数，3表示正在运行高优先级中断（无低优先级中断运行）。
  *
  */
 int  hs_mcs_51_core_interrupt_nested_get(hs_mcs_51_core_t * core);

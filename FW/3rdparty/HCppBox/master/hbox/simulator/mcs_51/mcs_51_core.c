@@ -6,6 +6,8 @@
  * Copyright: HYH (hyhsystem.cn)
  * License:   MIT
  **************************************************************/
+#include "mcs_51_core.h"
+#include "mcs_51_disassembly.h"
 
 struct hs_mcs_51_core
 {
@@ -14,7 +16,7 @@ struct hs_mcs_51_core
     struct
     {
         uint16_t delay_tick:2;//MCS-51具有多周期指令。为保证执行效果，对于多周期指令需要延时,最多延时3周期。
-        uint16_t interrupt_nested:2;//中断嵌套层数，0=正常运行
+        uint16_t interrupt_nested:2;//中断嵌套层数，0=正常运行,3=直接进入高优先级中断
         uint16_t pc;//PC
         uint32_t interrupt_low_priority_scan_table;//中断(低优先级)扫描表，位0表示中断0，最高支持32个中断
         uint32_t interrupt_high_priority_scan_table;//中断(高优先级)扫描表，位0表示中断0，最高支持32个中断
@@ -53,7 +55,14 @@ static void hs_mcs_51_core_scan_interrupt(hs_mcs_51_core_t * core)
                     {
                         core->interrupt_high_priority_scan_table &= (~(1ULL<<i));
                         uint16_t address=3+8*i;
-                        core->interrupt_nested++;//增加中断嵌套，RETI指令时自减1
+                        if(core->interrupt_nested==0)
+                        {
+                            core->interrupt_nested=3;
+                        }
+                        else
+                        {
+                            core->interrupt_nested++;//增加中断嵌套，RETI指令时自减1
+                        }
                         {
 
                             uint8_t sp=0;
@@ -151,139 +160,7 @@ static void hs_mcs_51_core_scan_interrupt(hs_mcs_51_core_t * core)
 
 static size_t hs_mcs_51_core_instruction_length(uint8_t instruction)
 {
-    size_t ret=1;
-    switch(instruction)
-    {
-    case 0x02:
-    case 0x10:
-    case 0x12:
-    case 0x20:
-    case 0x30:
-    case 0x43:
-    case 0x53:
-    case 0x63:
-    case 0x75:
-    case 0x85:
-    case 0x90:
-    case 0xB4:
-    case 0xB5:
-    case 0xB6:
-    case 0xB7:
-    case 0xB8:
-    case 0xB9:
-    case 0xBA:
-    case 0xBB:
-    case 0xBC:
-    case 0xBD:
-    case 0xBE:
-    case 0xBF:
-    case 0xD5:
-    {
-        ret=3;
-    }
-    break;
-    case 0x01:
-    case 0x05:
-    case 0x11:
-    case 0x15:
-    case 0x21:
-    case 0x24:
-    case 0x25:
-    case 0x31:
-    case 0x34:
-    case 0x35:
-    case 0x40:
-    case 0x41:
-    case 0x42:
-    case 0x44:
-    case 0x45:
-    case 0x50:
-    case 0x51:
-    case 0x52:
-    case 0x54:
-    case 0x55:
-    case 0x60:
-    case 0x61:
-    case 0x62:
-    case 0x64:
-    case 0x65:
-    case 0x70:
-    case 0x71:
-    case 0x72:
-    case 0x74:
-    case 0x76:
-    case 0x77:
-    case 0x78:
-    case 0x79:
-    case 0x7A:
-    case 0x7B:
-    case 0x7C:
-    case 0x7D:
-    case 0x7E:
-    case 0x7F:
-    case 0x80:
-    case 0x81:
-    case 0x82:
-    case 0x86:
-    case 0x87:
-    case 0x88:
-    case 0x89:
-    case 0x8A:
-    case 0x8B:
-    case 0x8C:
-    case 0x8D:
-    case 0x8E:
-    case 0x8F:
-    case 0x91:
-    case 0x92:
-    case 0x93:
-    case 0x94:
-    case 0xA0:
-    case 0xA1:
-    case 0xA2:
-    case 0xA6:
-    case 0xA7:
-    case 0xA8:
-    case 0xA9:
-    case 0xAA:
-    case 0xAB:
-    case 0xAC:
-    case 0xAD:
-    case 0xAE:
-    case 0xAF:
-    case 0xB0:
-    case 0xB1:
-    case 0xB2:
-    case 0xC0:
-    case 0xC1:
-    case 0xC2:
-    case 0xC5:
-    case 0xD0:
-    case 0xD1:
-    case 0xD2:
-    case 0xD8:
-    case 0xD9:
-    case 0xDA:
-    case 0xDB:
-    case 0xDC:
-    case 0xDD:
-    case 0xDE:
-    case 0xDF:
-    case 0xE1:
-    case 0xE5:
-    case 0xF1:
-    case 0xF5:
-    {
-        ret=2;
-    }
-    break;
-    default:
-    {
-        ret=1;
-    }
-    break;
-    }
-    return ret;
+    return hs_mcs_51_disassembly_instruction_length(&instruction);
 }
 
 static uint8_t hs_mcs_51_sfr_acc_read(hs_mcs_51_core_t * core)
@@ -438,7 +315,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
     {
         uint8_t instruction[HS_MCS_51_INSTRUCTION_MAX_LENGTH]= {0};
         core->io(core,HS_MCS_51_IO_READ_ROM,core->pc,instruction,sizeof(instruction),core->usr);
-        //TODO:执行指令
+        core->io(core,HS_MCS_51_IO_INSTRUCTION_ENTER,core->pc,instruction,sizeof(instruction),core->usr);
         switch(instruction[0])
         {
         case 0x01://AJMP addr
@@ -869,7 +746,14 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             //调整中断嵌套级别
             if(core->interrupt_nested!=0)
             {
-                core->interrupt_nested--;
+                if(core->interrupt_nested==3)
+                {
+                    core->interrupt_nested=0;
+                }
+                else
+                {
+                    core->interrupt_nested--;
+                }
             }
         }
         break;
@@ -1423,8 +1307,8 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         break;
         case 0x85://MOV addr,addr
         {
-            uint8_t addr_dst=instruction[1];
-            uint8_t addr_src=instruction[2];
+            uint8_t addr_src=instruction[1];
+            uint8_t addr_dst=instruction[2];
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr_src,&val,sizeof(val),core->usr);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr_dst,&val,sizeof(val),core->usr);
@@ -1465,6 +1349,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->pc+=2;
             core->delay_tick=1;
         };
+        break;
         case 0x90://MOV DPTR,#data
         {
             uint8_t dph=instruction[1];
@@ -1512,7 +1397,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 uint8_t Ov= (((acc<0x80 && data>0x7f && result>0x7f) || (acc>0x7f && data<0x80 && result<0x80))?1:0);
                 psw|=((Cy<<7)|(Ac<<6)|(Ov<<2));
                 hs_mcs_51_sfr_psw_write(core,psw);
-                hs_mcs_51_sfr_psw_write(core,result);
+                hs_mcs_51_sfr_acc_write(core,result);
             }
             core->pc+=2;
         }
@@ -1538,7 +1423,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 uint8_t Ov= (((acc<0x80 && data>0x7f && result>0x7f) || (acc>0x7f && data<0x80 && result<0x80))?1:0);
                 psw|=((Cy<<7)|(Ac<<6)|(Ov<<2));
                 hs_mcs_51_sfr_psw_write(core,psw);
-                hs_mcs_51_sfr_psw_write(core,result);
+                hs_mcs_51_sfr_acc_write(core,result);
             }
             core->pc+=2;
         }
@@ -1568,7 +1453,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 uint8_t Ov= (((acc<0x80 && data>0x7f && result>0x7f) || (acc>0x7f && data<0x80 && result<0x80))?1:0);
                 psw|=((Cy<<7)|(Ac<<6)|(Ov<<2));
                 hs_mcs_51_sfr_psw_write(core,psw);
-                hs_mcs_51_sfr_psw_write(core,result);
+                hs_mcs_51_sfr_acc_write(core,result);
             }
             core->pc+=1;
         }
@@ -1602,7 +1487,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 uint8_t Ov= (((acc<0x80 && data>0x7f && result>0x7f) || (acc>0x7f && data<0x80 && result<0x80))?1:0);
                 psw|=((Cy<<7)|(Ac<<6)|(Ov<<2));
                 hs_mcs_51_sfr_psw_write(core,psw);
-                hs_mcs_51_sfr_psw_write(core,result);
+                hs_mcs_51_sfr_acc_write(core,result);
             }
             core->pc+=1;
         }
@@ -2180,6 +2065,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         }
         break;
         }
+        core->io(core,HS_MCS_51_IO_INSTRUCTION_EXIT,core->pc,instruction,sizeof(instruction),core->usr);
     }
 }
 
@@ -2189,9 +2075,17 @@ void hs_mcs_51_core_tick(hs_mcs_51_core_t * core,size_t cycles)
     {
         while((cycles--)!=0)
         {
+            if(core->io==NULL)
+            {
+                //io无效，不工作
+                continue;
+            }
+
+            core->io(core,HS_MCS_51_IO_TICK_ENTER,core->pc,(uint8_t *)&cycles,sizeof(cycles),core->usr);
             if(core->delay_tick!=0)
             {
                 core->delay_tick--;
+                core->io(core,HS_MCS_51_IO_TICK_EXIT,core->pc,(uint8_t *)&cycles,sizeof(cycles),core->usr);
                 continue;
             }
 
@@ -2199,6 +2093,7 @@ void hs_mcs_51_core_tick(hs_mcs_51_core_t * core,size_t cycles)
 
             hs_mcs_51_core_exec(core);
 
+            core->io(core,HS_MCS_51_IO_TICK_EXIT,core->pc,(uint8_t *)&cycles,sizeof(cycles),core->usr);
         }
     }
 }

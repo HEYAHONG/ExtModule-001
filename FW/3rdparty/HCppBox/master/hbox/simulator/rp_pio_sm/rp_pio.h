@@ -1,30 +1,28 @@
 /***************************************************************
- * Name:      mcs_51.h
- * Purpose:   声明mcs_51接口
+ * Name:      rp_pio.h
+ * Purpose:   声明rp_pio接口。
  * Author:    HYH (hyhsystem.cn)
- * Created:   2024-11-21
+ * Created:   2025-02-16
  * Copyright: HYH (hyhsystem.cn)
  * License:   MIT
  **************************************************************/
-#ifndef __HS_MCS_51_H__
-#define __HS_MCS_51_H__
-
+#ifndef __HSIMLULATOR_RP_PIO_H__
+#define __HSIMLULATOR_RP_PIO_H__
+#include "stdbool.h"
+#include "stdint.h"
+#include "stdlib.h"
 #ifdef __cplusplus
 extern "C"
 {
 #endif // __cplusplus
 
-#include "mcs_51_common.h"
-#include "mcs_51_disassembly.h"
-#include "mcs_51_rom.h"
-#include "mcs_51_ram.h"
-#include "mcs_51_core.h"
-#include "mcs_51_serial.h"
+#include "rp_pio_sm.h"
+#include "rp_pio_rom.h"
 
 #ifdef __cplusplus
 }
 #endif // __cplusplus
 
-#endif // __HS_MCS_51_H__
+#endif // __HSIMLULATOR_RP_PIO_H__
 
 

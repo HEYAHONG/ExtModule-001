@@ -14,8 +14,10 @@ extern "C"
 {
 #endif // __cplusplus
 
-#include "simulator/rp_pio_sm/rp_pio_sm.h"
+#include "simulator/common/hs_common.h"
+#include "simulator/rp_pio_sm/rp_pio.h"
 #include "simulator/mcs_51/mcs_51.h"
+#include "simulator/risc-v/risc-v.h"
 
 #ifdef __cplusplus
 }
