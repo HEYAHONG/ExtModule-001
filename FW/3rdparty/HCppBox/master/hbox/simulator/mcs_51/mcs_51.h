@@ -20,6 +20,9 @@ extern "C"
 #include "mcs_51_ram.h"
 #include "mcs_51_core.h"
 #include "mcs_51_serial.h"
+#include "mcs_51_pin.h"
+#include "mcs_51_timer.h"
+
 
 #ifdef __cplusplus
 }

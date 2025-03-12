@@ -27,12 +27,14 @@ typedef struct hs_mcs_51_core hs_mcs_51_core_t;
  */
 size_t hs_mcs_51_core_size(void);
 
+#define HS_MCS_51_CORE_ALIGNED_FILL_SIZE(MAXTYPE,TYPE) (sizeof(MAXTYPE)>(sizeof(TYPE))?sizeof(MAXTYPE)-(sizeof(TYPE)):0)
+
 #ifndef HS_MCS_51_CORE_SIZE
 /** \brief hs_mcs_51_core_t结构体大小,一般用于静态分配，注意:可能大于hs_mcs_51_core_size()返回的值。
  *
  *
  */
-#define HS_MCS_51_CORE_SIZE()  (sizeof(uintptr_t)*2+sizeof(uint32_t)*4)
+#define HS_MCS_51_CORE_SIZE()  (sizeof(uintptr_t)*2+sizeof(uint16_t)*2+sizeof(uint32_t)*2+HS_MCS_51_CORE_ALIGNED_FILL_SIZE(uintptr_t,uint32_t))
 #endif // HS_MCS_51_CORE_SIZE
 
 #ifndef HS_MCS_51_INSTRUCTION_MAX_LENGTH
@@ -51,11 +53,12 @@ typedef enum
     HS_MCS_51_IO_WRITE_EXTERNAL_RAM,    //写入外部RAM(最高64KB)
     HS_MCS_51_IO_BREAKPOINT,            //由MCS-51的保留指令（0xA5）触发，可用于自定义的指令(默认这是一条单周期单字节指令)，通过地址传入PC的值（下一条指令地址），通过数据传出相对跳转的地址(有符号数)。
     HS_MCS_51_IO_INTERRUPT_ENTER,       //中断进入，地址为中断号，数据为运行级别
-    HS_MCS_51_IO_INTERRUPT_EXIT,        //中断退出，地址为中断号，数据为运行级别,通常用于自动清除某些标志
+    HS_MCS_51_IO_INTERRUPT_EXIT,        //中断退出，地址值无效，数据为运行级别,通常用于自动清除某些标志
     HS_MCS_51_IO_INSTRUCTION_ENTER,     //指令进入,开始执行指令时调用。通常用于调试或者用户处理指令。地址为当前PC值,数据为已经执行的指令。
     HS_MCS_51_IO_INSTRUCTION_EXIT,      //指令退出,结束执行指令时调用。通常用于调试或者用户处理指令。地址为当前PC值(可能已被指令修改),数据为已经执行的指令。
     HS_MCS_51_IO_TICK_ENTER,            //节拍进入,时钟节拍开始时调用。地址为当前PC值,数据为剩余节拍数(类型为size_t)。
-    HS_MCS_51_IO_TICK_EXIT              //节拍退出,时钟节拍结束时调用。地址为当前PC值,数据为剩余节拍数(类型为size_t)。
+    HS_MCS_51_IO_TICK_EXIT,             //节拍退出,时钟节拍结束时调用。地址为当前PC值,数据为剩余节拍数(类型为size_t)。
+    HS_MCS_51_IO_STACK_OVERFLOW         //栈溢出。地址为当前PC值,数据为假数据。
 } hs_mcs_51_io_opt_t;
 
 /** \brief MCS-51 IO操作

@@ -41,6 +41,79 @@ hs_mcs_51_core_t *hs_mcs_51_core_init(void *mem,hs_mcs_51_io_t io,void *usr)
     return NULL;
 }
 
+static void hs_mcs_51_core_pc_push(hs_mcs_51_core_t * core)
+{
+    if(core!=NULL && core->io!=NULL)
+    {
+        uint8_t sp=0;
+        hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
+        //压栈PC低字节
+        sp++;
+        {
+            if(core->io!=NULL)
+            {
+                uint8_t val=(core->pc);
+                core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
+            }
+        }
+        hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+        if(sp==0xff)
+        {
+            uint8_t val=0;
+            core->io(core,HS_MCS_51_IO_STACK_OVERFLOW,core->pc,&val,sizeof(val),core->usr);
+        }
+        //压栈PC高字节
+        sp++;
+        {
+            if(core->io!=NULL)
+            {
+                uint8_t val=(core->pc>>8);
+                core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
+            }
+        }
+        hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+        if(sp==0xff)
+        {
+            uint8_t val=0;
+            core->io(core,HS_MCS_51_IO_STACK_OVERFLOW,core->pc,&val,sizeof(val),core->usr);
+        }
+    }
+}
+
+static void hs_mcs_51_core_pc_pop(hs_mcs_51_core_t * core)
+{
+    if(core!=NULL && core->io!=NULL)
+    {
+        uint16_t pc=0;
+        {
+            //出栈PC
+            uint8_t sp=0;
+            hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
+            //出栈PC高字节
+            {
+                {
+                    uint8_t val=0;
+                    core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,sp,&val,sizeof(val),core->usr);
+                    pc+=256*val;
+                }
+            }
+            sp--;
+            hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+            //出栈PC低字节
+            {
+                {
+                    uint8_t val=0;
+                    core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,sp,&val,sizeof(val),core->usr);
+                    pc+=val;
+                }
+            }
+            sp--;
+            hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+        }
+        core->pc=pc;
+    }
+}
+
 static void hs_mcs_51_core_scan_interrupt(hs_mcs_51_core_t * core)
 {
     if(core != NULL)
@@ -64,29 +137,7 @@ static void hs_mcs_51_core_scan_interrupt(hs_mcs_51_core_t * core)
                             core->interrupt_nested++;//增加中断嵌套，RETI指令时自减1
                         }
                         {
-
-                            uint8_t sp=0;
-                            hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
-                            //压栈PC高字节
-                            sp++;
-                            {
-                                if(core->io!=NULL)
-                                {
-                                    uint8_t val=(core->pc>>8);
-                                    core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                                }
-                            }
-                            hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-                            //压栈PC低字节
-                            sp++;
-                            {
-                                if(core->io!=NULL)
-                                {
-                                    uint8_t val=(core->pc);
-                                    core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                                }
-                            }
-                            hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+                            hs_mcs_51_core_pc_push(core);
 
                             //跳转至中断入口地址
                             core->pc=address;
@@ -116,28 +167,7 @@ static void hs_mcs_51_core_scan_interrupt(hs_mcs_51_core_t * core)
                         uint16_t address=3+8*i;
                         core->interrupt_nested++;//增加中断嵌套，RETI指令时自减1
                         {
-                            uint8_t sp=0;
-                            hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
-                            //压栈PC高字节
-                            sp++;
-                            {
-                                if(core->io!=NULL)
-                                {
-                                    uint8_t val=(core->pc>>8);
-                                    core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                                }
-                            }
-                            hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-                            //压栈PC低字节
-                            sp++;
-                            {
-                                if(core->io!=NULL)
-                                {
-                                    uint8_t val=(core->pc);
-                                    core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                                }
-                            }
-                            hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+                            hs_mcs_51_core_pc_push(core);
 
                             //跳转至中断入口地址
                             core->pc=address;
@@ -316,6 +346,7 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         uint8_t instruction[HS_MCS_51_INSTRUCTION_MAX_LENGTH]= {0};
         core->io(core,HS_MCS_51_IO_READ_ROM,core->pc,instruction,sizeof(instruction),core->usr);
         core->io(core,HS_MCS_51_IO_INSTRUCTION_ENTER,core->pc,instruction,sizeof(instruction),core->usr);
+        core->pc+=hs_mcs_51_core_instruction_length(instruction[0]);//自动加PC值
         switch(instruction[0])
         {
         case 0x01://AJMP addr
@@ -328,7 +359,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         case 0xE1:
         {
             uint16_t addr11=256*(instruction[0]>>5)+instruction[1];
-            core->pc+=2;
             core->delay_tick=1;
             core->pc=addr11+(core->pc&0xF800);
         }
@@ -345,7 +375,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             //循环右移
             acc=((acc>>1)+(acc<<7));
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x04://INC A
@@ -354,7 +383,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             //自增
             acc++;
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x05://INC addr
@@ -364,7 +392,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val++;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x06://INC @Ri
@@ -378,7 +405,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
             val++;
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=1;
         }
         break;
         case 0x08:
@@ -396,14 +422,12 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             Rn++;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
-            core->pc+=1;
         }
         break;
         case 0x10://JBC bit,addr
         {
             uint8_t bit_address=instruction[1];
             int8_t  rel_addr=instruction[2];
-            core->pc+=3;
             if(hs_mcs_51_sfr_bit_read(core,bit_address))
             {
                 core->pc+=rel_addr;
@@ -420,29 +444,8 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         case 0xD1:
         case 0xF1:
         {
-            core->pc+=2;
             {
-                //压栈PC
-                uint8_t sp=0;
-                hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
-                //压栈PC高字节
-                sp++;
-                {
-                    {
-                        uint8_t val=(core->pc>>8);
-                        core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                    }
-                }
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-                //压栈PC低字节
-                sp++;
-                {
-                    {
-                        uint8_t val=(core->pc);
-                        core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                    }
-                }
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+                hs_mcs_51_core_pc_push(core);
             }
             uint16_t addr11=256*(instruction[0]>>5)+instruction[1];
             core->delay_tick=1;
@@ -451,29 +454,8 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         break;
         case 0x12://LCALL addr
         {
-            core->pc+=3;
             {
-                //压栈PC
-                uint8_t sp=0;
-                hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
-                //压栈PC高字节
-                sp++;
-                {
-                    {
-                        uint8_t val=(core->pc>>8);
-                        core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                    }
-                }
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-                //压栈PC低字节
-                sp++;
-                {
-                    {
-                        uint8_t val=(core->pc);
-                        core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                    }
-                }
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
+                hs_mcs_51_core_pc_push(core);
             }
             core->delay_tick=1;
             core->pc=256*instruction[1]+instruction[2];
@@ -491,7 +473,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             psw&=0x7F;
             psw|=(new_cy<<7);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=1;
         }
         break;
         case 0x14://DEC A
@@ -499,7 +480,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             acc--;
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x15://DEC addr
@@ -509,7 +489,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val--;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x16://DEC @Ri
@@ -523,7 +502,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
             val--;
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=1;
         }
         break;
         case 0x18:
@@ -541,14 +519,12 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             Rn--;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
-            core->pc+=1;
         }
         break;
         case 0x20://JB bit,addr
         {
             uint8_t bit_address=instruction[1];
             int8_t  rel_addr=instruction[2];
-            core->pc+=3;
             if(hs_mcs_51_sfr_bit_read(core,bit_address))
             {
                 core->pc+=rel_addr;
@@ -558,34 +534,8 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         break;
         case 0x22://RET
         {
-            uint16_t pc=0;
-            {
-                //出栈PC
-                uint8_t sp=0;
-                hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
-                //出栈PC低字节
-                {
-                    {
-                        uint8_t val=0;
-                        core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                        pc+=val;
-                    }
-                }
-                sp--;
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-                //出栈PC高字节
-                {
-                    {
-                        uint8_t val=0;
-                        core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                        pc+=256*val;
-                    }
-                }
-                sp--;
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-            }
+            hs_mcs_51_core_pc_pop(core);
             core->delay_tick=1;
-            core->pc=pc;
         }
         break;
         case 0x23: //RL A
@@ -594,7 +544,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             //循环左移
             acc=((acc<<1)+(acc>>7));
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x24://ADD A,#Data
@@ -613,7 +562,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x25://ADD A,addr
@@ -635,7 +583,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x26://ADD A,@Ri
@@ -661,7 +608,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x28:
@@ -691,14 +637,12 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x30://JNB bit,addr
         {
             uint8_t bit_address=instruction[1];
             int8_t  rel_addr=instruction[2];
-            core->pc+=3;
             if(!hs_mcs_51_sfr_bit_read(core,bit_address))
             {
                 core->pc+=rel_addr;
@@ -707,34 +651,8 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         break;
         case 0x32://RETI
         {
-            uint16_t pc=0;
-            {
-                //出栈PC
-                uint8_t sp=0;
-                hs_mcs_51_sfr_read(core,HS_MCS_51_SFR_SP,&sp);
-                //出栈PC低字节
-                {
-                    {
-                        uint8_t val=0;
-                        core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                        pc+=val;
-                    }
-                }
-                sp--;
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-                //出栈PC高字节
-                {
-                    {
-                        uint8_t val=0;
-                        core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,sp,&val,sizeof(val),core->usr);
-                        pc+=256*val;
-                    }
-                }
-                sp--;
-                hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-            }
+            hs_mcs_51_core_pc_pop(core);
             core->delay_tick=1;
-            core->pc=pc;
             {
                 //调用中断回调
                 if(core->io!=NULL)
@@ -769,7 +687,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             psw&=0x7F;
             psw|=(new_cy<<7);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=1;
         }
         break;
         case 0x34://ADDC A,#Data
@@ -789,7 +706,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x35://ADDC A,addr
@@ -812,7 +728,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x36://ADDC A,@Ri
@@ -839,7 +754,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x38:
@@ -870,12 +784,10 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x40://JC addr
         {
-            core->pc+=2;
             int8_t rel_addr=instruction[1];
             uint8_t psw=hs_mcs_51_sfr_psw_read(core);
             uint8_t Cy=(psw>>7);
@@ -894,7 +806,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val|=acc;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x43://ORL addr,#data
@@ -905,7 +816,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val|=data;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=3;
             core->delay_tick=1;
         }
         break;
@@ -917,7 +827,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc|=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x45://ORL A,addr
@@ -931,7 +840,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc|=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x46://ORL A,@Ri
@@ -949,7 +857,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc|=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x48:
@@ -971,12 +878,10 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc|=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x50://JNC addr
         {
-            core->pc+=2;
             int8_t rel_addr=instruction[1];
             uint8_t psw=hs_mcs_51_sfr_psw_read(core);
             uint8_t Cy=(psw>>7);
@@ -995,7 +900,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val&=acc;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x53://ANL addr,#data
@@ -1006,7 +910,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val&=data;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=3;
             core->delay_tick=1;
         }
         break;
@@ -1018,7 +921,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc&=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x55://ANL A,addr
@@ -1032,7 +934,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc&=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x56://ANL A,@Ri
@@ -1050,7 +951,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc&=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x58:
@@ -1072,12 +972,10 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc&=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x60://JZ addr
         {
-            core->pc+=2;
             int8_t rel_addr=instruction[1];
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             if(!acc)
@@ -1095,7 +993,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val^=acc;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x63://XRL addr,#data
@@ -1106,7 +1003,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             val^=data;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=3;
             core->delay_tick=1;
         }
         break;
@@ -1118,7 +1014,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc^=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x65://XRL A,addr
@@ -1132,7 +1027,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc^=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=2;
         }
         break;
         case 0x66://XRL A,@Ri
@@ -1150,7 +1044,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc^=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x68:
@@ -1172,12 +1065,10 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 acc^=data;
             }
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0x70://JNZ addr
         {
-            core->pc+=2;
             int8_t rel_addr=instruction[1];
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             if(acc)
@@ -1195,7 +1086,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t bit=(hs_mcs_51_sfr_bit_read(core,bit_address)?0x01:0);
             psw|=((bit || Cy)?0x80:0);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1211,7 +1101,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         {
             uint8_t data=instruction[1];
             hs_mcs_51_sfr_acc_write(core,data);
-            core->pc+=2;
         }
         break;
         case 0x75://MOV addr,#data
@@ -1219,7 +1108,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t addr=instruction[1];
             uint8_t data=instruction[2];
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&data,sizeof(data),core->usr);
-            core->pc+=3;
             core->delay_tick=1;
         }
         break;
@@ -1232,7 +1120,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             uint8_t data=instruction[1];
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&data,sizeof(data),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x78:
@@ -1248,12 +1135,10 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t Rn_address=8*((psw>>3)&0x3)+(instruction[0]&0x07);
             uint8_t data=instruction[1];
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&data,sizeof(data),core->usr);
-            core->pc+=2;
         }
         break;
         case 0x80://SJMP addr
         {
-            core->pc+=2;
             int8_t rel_addr=instruction[1];
             core->pc+=rel_addr;
             core->delay_tick=1;
@@ -1268,13 +1153,11 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             psw&=0x7F;
             psw|=((bit && Cy)?0x80:0);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
         case 0x83://MOVC A,@A+PC
         {
-            core->pc+=1;
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             core->io(core,HS_MCS_51_IO_READ_ROM,core->pc+acc,&acc,sizeof(acc),core->usr);
             hs_mcs_51_sfr_acc_write(core,acc);
@@ -1301,7 +1184,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             hs_mcs_51_sfr_psw_write(core,psw);
             hs_mcs_51_sfr_acc_write(core,acc);
             hs_mcs_51_sfr_b_write(core,b);
-            core->pc+=1;
             core->delay_tick=3;
         }
         break;
@@ -1312,7 +1194,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr_src,&val,sizeof(val),core->usr);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr_dst,&val,sizeof(val),core->usr);
-            core->pc+=3;
             core->delay_tick=1;
         }
         break;
@@ -1327,7 +1208,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1346,7 +1226,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&val,sizeof(val),core->usr);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&val,sizeof(val),core->usr);
-            core->pc+=2;
             core->delay_tick=1;
         };
         break;
@@ -1355,7 +1234,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t dph=instruction[1];
             uint8_t dpl=instruction[2];
             hs_mcs_51_sfr_dptr_write(core,256*dph+dpl);
-            core->pc+=3;
             core->delay_tick=1;
         }
         break;
@@ -1365,7 +1243,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t psw=hs_mcs_51_sfr_psw_read(core);
             uint8_t Cy=(psw>>7);
             hs_mcs_51_sfr_bit_write(core,bit_address,Cy!=0);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1375,7 +1252,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t  acc=hs_mcs_51_sfr_acc_read(core);
             core->io(core,HS_MCS_51_IO_READ_ROM,dptr+acc,&acc,sizeof(acc),core->usr);
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
             core->delay_tick=1;
         }
         break;
@@ -1399,7 +1275,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
                 hs_mcs_51_sfr_acc_write(core,result);
             }
-            core->pc+=2;
         }
         break;
         case 0x95://SUBB A,addr
@@ -1425,7 +1300,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
                 hs_mcs_51_sfr_acc_write(core,result);
             }
-            core->pc+=2;
         }
         break;
         case 0x96:
@@ -1455,7 +1329,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
                 hs_mcs_51_sfr_acc_write(core,result);
             }
-            core->pc+=1;
         }
         break;
         case 0x98:
@@ -1489,7 +1362,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 hs_mcs_51_sfr_psw_write(core,psw);
                 hs_mcs_51_sfr_acc_write(core,result);
             }
-            core->pc+=1;
         }
         break;
         case 0xA0://ORL C,/addr
@@ -1500,7 +1372,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t bit=((!hs_mcs_51_sfr_bit_read(core,bit_address))?0x01:0);
             psw|=((bit || Cy)?0x80:0);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1512,7 +1383,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t bit=(hs_mcs_51_sfr_bit_read(core,bit_address)?0x01:0);
             psw|=(bit<<7);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=2;
         }
         break;
         case 0xA3://INC DPTR
@@ -1520,7 +1390,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint16_t dptr=hs_mcs_51_sfr_dptr_read(core);
             dptr++;
             hs_mcs_51_sfr_dptr_write(core,dptr);
-            core->pc+=1;
             core->delay_tick=1;
         }
         break;
@@ -1540,14 +1409,12 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             hs_mcs_51_sfr_psw_write(core,psw);
             hs_mcs_51_sfr_acc_write(core,acc);
             hs_mcs_51_sfr_b_write(core,b);
-            core->pc+=1;
             core->delay_tick=3;
         }
         break;
         case 0xA5://0xA5,保留指令
         {
             int8_t rel_addr=0;
-            core->pc+=1;
             core->io(core,HS_MCS_51_IO_BREAKPOINT,core->pc,(uint8_t *)&rel_addr,sizeof(rel_addr),core->usr);
             core->pc+=rel_addr;
         }
@@ -1563,7 +1430,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1582,7 +1448,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&val,sizeof(val),core->usr);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&val,sizeof(val),core->usr);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1595,7 +1460,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             psw&=0x7F;
             psw|=((bit && Cy)?0x80:0);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1603,7 +1467,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         {
             uint8_t bit_address=instruction[1];
             hs_mcs_51_sfr_bit_write(core,bit_address,!hs_mcs_51_sfr_bit_read(core,bit_address));
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1615,7 +1478,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             psw&=0x7F;
             psw|=(Cy<<7);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=1;
         }
         break;
         case 0xB4://CJNE A,#data,addr
@@ -1632,7 +1494,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 }
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
-            core->pc+=3;
             if(acc!=data)
             {
                 core->pc+=rel_addr;
@@ -1656,7 +1517,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 }
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
-            core->pc+=3;
             if(acc!=data)
             {
                 core->pc+=rel_addr;
@@ -1684,7 +1544,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 }
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
-            core->pc+=3;
             if(val!=data)
             {
                 core->pc+=rel_addr;
@@ -1716,7 +1575,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 }
                 hs_mcs_51_sfr_psw_write(core,psw);
             }
-            core->pc+=3;
             if(Rn!=data)
             {
                 core->pc+=rel_addr;
@@ -1738,7 +1596,11 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
                 }
             }
             hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-            core->pc+=2;
+            if(sp==0xff)
+            {
+                uint8_t val=0;
+                core->io(core,HS_MCS_51_IO_STACK_OVERFLOW,core->pc,&val,sizeof(val),core->usr);
+            }
             core->delay_tick=1;
         }
         break;
@@ -1746,15 +1608,13 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         {
             uint8_t bit_address=instruction[1];
             hs_mcs_51_sfr_bit_write(core,bit_address,false);
-            core->pc+=2;
         }
         break;
         case 0xC3://CLR C
         {
             uint8_t psw=hs_mcs_51_sfr_psw_read(core);
             psw&=0x7F;
-            hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=1;
+            hs_mcs_51_sfr_psw_write(core,psw);;
         }
         break;
         case 0xC4://SWAP A
@@ -1762,7 +1622,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             acc=(acc>>4)+(acc<<4);
             hs_mcs_51_sfr_acc_write(core,acc);
-            core->pc+=1;
         }
         break;
         case 0xC5://XCH A,addr
@@ -1774,7 +1633,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             hs_mcs_51_sfr_acc_write(core,data);
             data=acc;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&data,sizeof(data),core->usr);
-            core->pc+=2;
         }
         break;
         case 0xC6:
@@ -1790,7 +1648,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             hs_mcs_51_sfr_acc_write(core,val);
             val=acc;
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=1;
         }
         break;
         case 0xC8:
@@ -1810,7 +1667,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             hs_mcs_51_sfr_acc_write(core,Rn);
             Rn=acc;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
-            core->pc+=1;
         }
         break;
         case 0xD0://POP
@@ -1827,7 +1683,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             }
             sp--;
             hs_mcs_51_sfr_write(core,HS_MCS_51_SFR_SP,sp);
-            core->pc+=2;
             core->delay_tick=1;
         }
         break;
@@ -1835,7 +1690,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         {
             uint8_t bit_address=instruction[1];
             hs_mcs_51_sfr_bit_write(core,bit_address,true);
-            core->pc+=2;
         }
         break;
         case 0xD3://SETB C
@@ -1843,7 +1697,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t psw=hs_mcs_51_sfr_psw_read(core);
             psw|=0x80;
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=1;
         }
         break;
         case 0xD4://DA A
@@ -1864,7 +1717,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             }
             hs_mcs_51_sfr_acc_write(core,acc);
             hs_mcs_51_sfr_psw_write(core,psw);
-            core->pc+=1;
         }
         break;
         case 0xD5://DJNZ addr,addr
@@ -1875,7 +1727,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&data,sizeof(data),core->usr);
             data--;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&data,sizeof(data),core->usr);
-            core->pc+=3;
             if(data!=0)
             {
                 core->pc+=rel_addr;
@@ -1896,7 +1747,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             hs_mcs_51_sfr_acc_write(core,(val&0x0F) & (acc & 0xF0));
             val=((acc&0x0F)&(val&0xF0));
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=1;
         }
         break;
         case 0xD8:
@@ -1914,7 +1764,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             Rn--;
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
-            core->pc+=2;
             int8_t rel_addr=instruction[1];
             if(Rn!=0)
             {
@@ -1929,7 +1778,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t data=0;
             core->io(core,HS_MCS_51_IO_READ_EXTERNAL_RAM,dptr,&data,sizeof(data),core->usr);
             hs_mcs_51_sfr_acc_write(core,data);
-            core->pc+=1;
             core->delay_tick=1;
         }
         break;
@@ -1943,14 +1791,12 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_EXTERNAL_RAM,Rn,&val,sizeof(val),core->usr);
             hs_mcs_51_sfr_acc_write(core,val);
-            core->pc+=1;
             core->delay_tick=1;
         }
         break;
         case 0xE4://CLR A
         {
             hs_mcs_51_sfr_acc_write(core,0);
-            core->pc+=1;
         }
         break;
         case 0xE5://MOV A,addr
@@ -1959,7 +1805,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t data=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,addr,&data,sizeof(data),core->usr);
             hs_mcs_51_sfr_acc_write(core,data);
-            core->pc+=2;
         }
         break;
         case 0xE6:
@@ -1972,7 +1817,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t val=0;
             core->io(core,HS_MCS_51_IO_READ_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
             hs_mcs_51_sfr_acc_write(core,val);
-            core->pc+=1;
         }
         break;
         case 0xE8:
@@ -1989,7 +1833,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t Rn=0;
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             hs_mcs_51_sfr_acc_write(core,Rn);
-            core->pc+=1;
         }
         break;
         case 0xF0://MOVX @DPTR,A
@@ -1997,7 +1840,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint16_t dptr=hs_mcs_51_sfr_dptr_read(core);
             uint8_t data=hs_mcs_51_sfr_acc_read(core);
             core->io(core,HS_MCS_51_IO_WRITE_EXTERNAL_RAM,dptr,&data,sizeof(data),core->usr);
-            core->pc+=1;
             core->delay_tick=1;
         }
         break;
@@ -2010,7 +1852,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             uint8_t val=hs_mcs_51_sfr_acc_read(core);
             core->io(core,HS_MCS_51_IO_WRITE_EXTERNAL_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=1;
             core->delay_tick=1;
         }
         break;
@@ -2018,7 +1859,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
         {
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             hs_mcs_51_sfr_acc_write(core,~acc);
-            core->pc+=1;
         }
         break;
         case 0xF5://MOV addr,A
@@ -2027,7 +1867,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t addr=instruction[1];
             uint8_t data=hs_mcs_51_sfr_acc_read(core);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,addr,&data,sizeof(data),core->usr);
-            core->pc+=2;
         }
         break;
         case 0xF6:
@@ -2039,7 +1878,6 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             core->io(core,HS_MCS_51_IO_READ_RAM_SFR,Rn_address,&Rn,sizeof(Rn),core->usr);
             uint8_t val=hs_mcs_51_sfr_acc_read(core);
             core->io(core,HS_MCS_51_IO_WRITE_HIGH_RAM,Rn,&val,sizeof(val),core->usr);
-            core->pc+=1;
         }
         break;
         case 0xF8:
@@ -2055,13 +1893,11 @@ static void hs_mcs_51_core_exec(hs_mcs_51_core_t * core)
             uint8_t acc=hs_mcs_51_sfr_acc_read(core);
             uint8_t Rn_address=8*((psw>>3)&0x3)+(instruction[0]&0x07);
             core->io(core,HS_MCS_51_IO_WRITE_RAM_SFR,Rn_address,&acc,sizeof(acc),core->usr);
-            core->pc+=1;
         }
         break;
         default:
         {
             //默认行为,类似NOP指令，啥也不做
-            core->pc+=hs_mcs_51_core_instruction_length(instruction[0]);
         }
         break;
         }
