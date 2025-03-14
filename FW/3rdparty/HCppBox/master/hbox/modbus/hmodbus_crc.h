@@ -1,12 +1,22 @@
 /***************************************************************
- * Name:      data.c
- * Purpose:   modbus 数据处理
+ * Name:      hmodbus_data.h
+ * Purpose:   hmodbus_data
  * Author:    HYH (hyhsystem.cn)
- * Created:   2024-09-02
+ * Created:   2025-03-14
  * Copyright: HYH (hyhsystem.cn)
  * License:   MIT
  **************************************************************/
-#include "hmodbus.h"
+#ifndef __MODBUS_HMODBUS_DATA_H__
+#define __MODBUS_HMODBUS_DATA_H__
+#include "stdint.h"
+#include "stdbool.h"
+#include "stdlib.h"
+#include "string.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /** \brief 从数据帧中获取uint16_t数据
  *
@@ -16,17 +26,7 @@
  * \return uint16_t 读取的数据
  *
  */
-uint16_t modbus_data_get_uint16_t(const uint8_t *data,size_t offset,size_t data_length)
-{
-    uint16_t ret=0;
-    if(data!=NULL && ((offset + 2) <= data_length))
-    {
-        ret=data[offset];
-        ret<<=8;
-        ret+=data[offset+1];
-    }
-    return ret;
-}
+uint16_t modbus_data_get_uint16_t(const uint8_t *data,size_t offset,size_t data_length);
 
 /** \brief 向数据帧中获取设置uint16_t数据
  *
@@ -36,13 +36,15 @@ uint16_t modbus_data_get_uint16_t(const uint8_t *data,size_t offset,size_t data_
  * \param val uint16_t 设置的数据
  *
  */
-void modbus_data_set_uint16_t(uint8_t *data,size_t offset,size_t data_length,uint16_t val)
-{
-    if(data!=NULL && ((offset + 2) <= data_length))
-    {
-        data[offset]=(val>>8);
-        data[offset+1]=(val&0xFF);
-    }
+void modbus_data_set_uint16_t(uint8_t *data,size_t offset,size_t data_length,uint16_t val);
+
+
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif // __MODBUS_HMODBUS_DATA_H__
+
 
 
