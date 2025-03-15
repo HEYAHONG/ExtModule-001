@@ -71,10 +71,54 @@ static modbus_data_register_t  read_input_register(modbus_rtu_slave_tiny_context
     {
         return HAL_GetUIDw2()>>16;
     }
-    if(addr > 5 && addr < 17)
+    if(addr >= 6 && addr <= 16)
     {
         //[6 15]表示[ADC_Channel_0 ADC_Channel_10]
         return ADCConvert(addr-6);
+    }
+    if(addr >= 17 && addr <= 22 )
+    {
+        //[17 22]构建时间年月日时分秒
+        uint16_t ret=0;
+        switch(addr-17)
+        {
+        case 0:
+        {
+            ret=hcompiler_get_date_year();
+        }
+        break;
+        case 1:
+        {
+            ret=hcompiler_get_date_month();
+        }
+        break;
+        case 2:
+        {
+            ret=hcompiler_get_date_day();
+        }
+        break;
+        case 3:
+        {
+            ret=hcompiler_get_time_hour();
+        }
+        break;
+        case 4:
+        {
+            ret=hcompiler_get_time_minute();
+        }
+        break;
+        case 5:
+        {
+            ret=hcompiler_get_time_second();
+        }
+        break;
+        default:
+        {
+
+        }
+        break;
+        }
+        return ret;
     }
     return 0xBEEF;
 }
