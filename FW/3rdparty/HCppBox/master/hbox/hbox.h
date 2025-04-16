@@ -29,6 +29,9 @@
 #include "hbase64.h"
 #include "hsimulator.h"
 #include "hgui.h"
+#include "hshell.h"
+#include "huuid.h"
+#include "hcrypto.h"
 
 /*
 由C++编写的组件
@@ -40,5 +43,6 @@
 #include "hfifo.h"
 #include "hsoftdog.h"
 #include "hobj.h"
+#include "hsim.h"
 
 #endif // HBOX_H_INCLUDED

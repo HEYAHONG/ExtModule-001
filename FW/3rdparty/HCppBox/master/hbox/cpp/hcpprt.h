@@ -10,6 +10,7 @@
 #define HCPPRT_H
 #include "hcompiler.h"
 #include "hdefaults.h"
+#include "stdbool.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -21,6 +22,13 @@ extern "C"
  *
  */
 void hcpprt_init(void);
+
+
+/** \brief hcpprt循环，用户需要较低优先级的任务或者空闲任务中周期性调用此函数以保证内部状态得到正确更新。
+ *
+ *
+ */
+void hcpprt_loop(void);
 
 #ifdef __cplusplus
 }
@@ -245,6 +253,25 @@ public:
         m_lock.unlock();
     }
 };
+
+/*
+ * 利用C++运行库进行初始化的入口（仅适用于C++代码）,效果类似GCC的__attribute__((constructor))属性
+ */
+typedef void (*hcpprt_init_entry_t)(void);
+#define HCPPRT_INIT_EXPORT(NAME,ENTRY) \
+    __USED\
+    static class hcpprt_init_##NAME\
+    {\
+        public:\
+        hcpprt_init_##NAME()\
+        {\
+            if((ENTRY)!=NULL)\
+            {\
+                (ENTRY)();\
+            }\
+        }\
+        \
+    } g_hcpprt_init_##NAME
 
 #endif // __cplusplus
 #endif // HCPPRT_H

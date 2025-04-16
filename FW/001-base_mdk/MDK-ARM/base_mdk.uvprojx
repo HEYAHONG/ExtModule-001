@@ -747,6 +747,36 @@
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\hgui.c</FilePath>
             </File>
+            <File>
+              <FileName>hsim.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\cpp\hsim.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_softfloat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_softfloat.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_softfp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty_softfp.c</FilePath>
+            </File>
+            <File>
+              <FileName>hcrypto.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hcrypto.c</FilePath>
+            </File>
+            <File>
+              <FileName>hshell.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hshell.c</FilePath>
+            </File>
+            <File>
+              <FileName>huuid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\huuid.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
