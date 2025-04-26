@@ -16,22 +16,18 @@
 #include "hcompiler.h"
 #include "hdefaults.h"
 #include "h3rdparty.h" //第三方库
-#include "heventloop.h"
-#include "heventslots.h"
-#include "heventchain.h"
-#include "hwatchdog.h"
-#include "hmemoryheap.h"
-#include "hobject.h"
-#include "hringbuf.h"
-#include "hunicode.h"
+#include "hevent.h"
+#include "hdriverframework.h"
+#include "hmemory.h"
+#include "hlocale.h"
 #include "hstacklesscoroutine.h"
 #include "hmodbus.h"
-#include "hbase64.h"
 #include "hsimulator.h"
 #include "hgui.h"
 #include "hshell.h"
 #include "huuid.h"
 #include "hcrypto.h"
+#include "hruntime.h"
 
 /*
 由C++编写的组件

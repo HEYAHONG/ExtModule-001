@@ -156,19 +156,111 @@ static void  do_hdefaults_mutex_unlock(void *usr)
 #endif
 }
 
-const hdefaults_api_table_t defalut_table=
+
+HDEFAULTS_USERCALL_DECLARE(tick);
+HDEFAULTS_USERCALL_DECLARE(malloc);
+HDEFAULTS_USERCALL_DECLARE(free);
+HDEFAULTS_USERCALL_DECLARE(glock);
+HDEFAULTS_USERCALL_DECLARE(gunlock);
+intptr_t do_hdefaults_usercall(uintptr_t number,...)
+{
+    intptr_t ret=0;
+    va_list va;
+    va_start(va,number);
+    if(number < HDEFAULTS_USERCALL_NUMBER_RESERVED_SYSCALL_END)
+    {
+        //准备调用syscall
+    }
+    else if(number < HDEFAULTS_USERCALL_NUMBER_END)
+    {
+
+        switch(number)
+        {
+        case HDEFAULTS_USERCALL_NUMBER_TICK:
+        {
+            ret=__hdefaults_usercall_tick(number,va);
+        }
+        break;
+        case HDEFAULTS_USERCALL_NUMBER_MALLOC:
+        {
+            ret=__hdefaults_usercall_malloc(number,va);
+        }
+        break;
+        case HDEFAULTS_USERCALL_NUMBER_FREE:
+        {
+            ret=__hdefaults_usercall_free(number,va);
+        }
+        break;
+        case HDEFAULTS_USERCALL_NUMBER_GLOCK:
+        {
+            ret=__hdefaults_usercall_glock(number,va);
+        }
+        break;
+        case HDEFAULTS_USERCALL_NUMBER_GUNLOCK:
+        {
+            ret=__hdefaults_usercall_gunlock(number,va);
+        }
+        break;
+        default:
+        {
+
+        }
+        break;
+        }
+    }
+    va_end(va);
+    return ret;
+}
+
+HDEFAULTS_USERCALL_DEFINE0(tick,HDEFAULTS_USERCALL_NUMBER_TICK,hdefaults_tick_t)
+{
+    return hdefaults_tick_get();
+}
+
+HDEFAULTS_USERCALL_DEFINE2(malloc,HDEFAULTS_USERCALL_NUMBER_MALLOC,void *,size_t,nBytes,void *,usr)
+{
+    return hdefaults_malloc(nBytes,usr);
+}
+
+HDEFAULTS_USERCALL_DEFINE2(free,HDEFAULTS_USERCALL_NUMBER_FREE,int,void *,ptr,void *,usr)
+{
+    hdefaults_free(ptr,usr);
+    return 0;
+}
+
+HDEFAULTS_USERCALL_DEFINE1(glock,HDEFAULTS_USERCALL_NUMBER_GLOCK,int,void *,usr)
+{
+    hdefaults_mutex_lock(usr);
+    return 0;
+}
+
+HDEFAULTS_USERCALL_DEFINE1(gunlock,HDEFAULTS_USERCALL_NUMBER_GUNLOCK,int,void *,usr)
+{
+    hdefaults_mutex_unlock(usr);
+    return 0;
+}
+
+static const hdefaults_api_table_t default_api_table=
 {
     do_hdefaults_tick_get,
     do_hdefaults_malloc,
     do_hdefaults_free,
     do_hdefaults_mutex_lock,
     do_hdefaults_mutex_unlock,
+    do_hdefaults_usercall,
 };
+static const hdefaults_api_table_t * api_table=&default_api_table;
 const hdefaults_api_table_t * hdefaults_get_api_table(void)
 {
-    return &defalut_table;
+    return api_table;
 }
 
+const hdefaults_api_table_t * hdefaults_set_api_table(const hdefaults_api_table_t* new_api_table)
+{
+    const hdefaults_api_table_t* old_api_table=api_table;
+    api_table=new_api_table;
+    return old_api_table;
+}
 
 hdefaults_tick_t hdefaults_tick_get(void)
 {

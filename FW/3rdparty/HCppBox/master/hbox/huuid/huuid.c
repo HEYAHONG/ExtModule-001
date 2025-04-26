@@ -10,6 +10,7 @@
 #include "string.h"
 #include "ctype.h"
 #include "stdlib.h"
+#include "hcrypto.h"
 
 HUUID_DEFINE_GLOBAL(huuid_null_uuid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
 
@@ -111,6 +112,75 @@ void huuid_unpack(const huuid_t in, huuid_base_version_t *uu)
     memcpy(uu->node, ptr, sizeof(uu->node));
 }
 
+void huuid_node_format(huuid_node_t node)
+{
+    if(node==NULL)
+    {
+        return;
+    }
+
+    node[0] |= 0x01; /**<  防止与MAC地址冲突 */
+}
+
+uint64_t huuid_timestamp_convert(uint64_t unix_ts_us)
+{
+    return unix_ts_us*10+( (((uint64_t) 0x01B21DD2) << 32) + 0x13814000);
+}
+
+void huuid_time_uuid_format(huuid_t time_uuid,uint64_t timestamp,uint16_t clock_seq,huuid_node_t node)
+{
+    if(time_uuid == NULL || node == NULL)
+    {
+        return;
+    }
+
+    huuid_base_version_t uuid;
+    memcpy(uuid.node,node,sizeof(huuid_node_t));
+    uuid.clock_seq=clock_seq;
+    uuid.time_low=((timestamp >> 0)&0xFFFFFFFF);
+    uuid.time_mid=((timestamp >> 32)&0xFFFF);
+    uuid.time_hi_and_version=((timestamp >> 48)&0xFFFF);
+    uuid.clock_seq = (uuid.clock_seq & 0x3FFF) | 0x8000;
+    uuid.time_hi_and_version = (uuid.time_hi_and_version & 0x0FFF) | 0x1000;
+    huuid_pack(&uuid,time_uuid);
+}
+
+HUUID_DEFINE_GLOBAL(huuid_dns_uuid,0x6b,0xa7,0xb8,0x10,0x9d,0xad,0x11,0xd1,0x80,0xb4,0x00,0xc0,0x4f,0xd4,0x30,0xc8);
+HUUID_DEFINE_GLOBAL(huuid_url_uuid,0x6b,0xa7,0xb8,0x11,0x9d,0xad,0x11,0xd1,0x80,0xb4,0x00,0xc0,0x4f,0xd4,0x30,0xc8);
+HUUID_DEFINE_GLOBAL(huuid_oid_uuid,0x6b,0xa7,0xb8,0x12,0x9d,0xad,0x11,0xd1,0x80,0xb4,0x00,0xc0,0x4f,0xd4,0x30,0xc8);
+HUUID_DEFINE_GLOBAL(huuid_x500_uuid,0x6b,0xa7,0xb8,0x14,0x9d,0xad,0x11,0xd1,0x80,0xb4,0x00,0xc0,0x4f,0xd4,0x30,0xc8);
+
+bool huuid_md5_uuid_generate(huuid_t output,const uint8_t *name,size_t name_len,const huuid_t namespace_uuid)
+{
+    if(output==NULL || namespace_uuid==NULL)
+    {
+        return false;
+    }
+
+    {
+        hmd5_md5_t md5;
+        hmd5_context_t ctx;
+        hmd5_starts(&ctx);
+        hmd5_update(&ctx,(uint8_t *)namespace_uuid,sizeof(huuid_t));
+        if(name != NULL && name_len > 0)
+        {
+            hmd5_update(&ctx,name,name_len);
+        }
+        hmd5_finish(&ctx,md5);
+        memcpy(output,md5,sizeof(huuid_t));
+    }
+
+    {
+        huuid_base_version_t uuid;
+        huuid_unpack(output,&uuid);
+        uuid.clock_seq = (uuid.clock_seq & 0x3FFF) | 0x8000;
+        uuid.time_hi_and_version = (uuid.time_hi_and_version & 0x0FFF) | 0x3000;
+        huuid_pack(&uuid,output);
+    }
+
+    return true;
+}
+
 void huuid_random_uuid_format(huuid_t random_uuid)
 {
     if(random_uuid==NULL)
@@ -122,6 +192,73 @@ void huuid_random_uuid_format(huuid_t random_uuid)
     uuid.clock_seq = (uuid.clock_seq & 0x3FFF) | 0x8000;
     uuid.time_hi_and_version = (uuid.time_hi_and_version & 0x0FFF) | 0x4000;
     huuid_pack(&uuid,random_uuid);
+}
+
+bool huuid_sha1_uuid_generate(huuid_t output,const uint8_t *name,size_t name_len,const huuid_t namespace_uuid)
+{
+    if(output==NULL || namespace_uuid==NULL)
+    {
+        return false;
+    }
+
+    {
+        hsha1_sha_t sha1;
+        hsha1_context_t ctx;
+        hsha1_starts(&ctx);
+        hsha1_update(&ctx,(uint8_t *)namespace_uuid,sizeof(huuid_t));
+        if(name != NULL && name_len > 0)
+        {
+            hsha1_update(&ctx,name,name_len);
+        }
+        hsha1_finish(&ctx,sha1);
+        memcpy(output,sha1,sizeof(huuid_t));
+    }
+
+    {
+        huuid_base_version_t uuid;
+        huuid_unpack(output,&uuid);
+        uuid.clock_seq = (uuid.clock_seq & 0x3FFF) | 0x8000;
+        uuid.time_hi_and_version = (uuid.time_hi_and_version & 0x0FFF) | 0x5000;
+        huuid_pack(&uuid,output);
+    }
+
+    return true;
+}
+
+void huuid_time_be_uuid_format(huuid_t time_uuid,uint64_t timestamp,uint16_t clock_seq,huuid_node_t node)
+{
+    if(time_uuid == NULL || node == NULL)
+    {
+        return;
+    }
+
+    huuid_base_version_t uuid;
+    memcpy(uuid.node,node,sizeof(huuid_node_t));
+    uuid.clock_seq=clock_seq;
+    /*
+     * V6与V1的区别在于时间戳的高低位的分布不同
+     */
+    uuid.time_low=((timestamp >> 28)&0xFFFFFFFF);
+    uuid.time_mid=((timestamp >> 12)&0xFFFF);
+    uuid.time_hi_and_version=((timestamp >> 0)&0xFFFF);
+    uuid.clock_seq = (uuid.clock_seq & 0x3FFF) | 0x8000;
+    uuid.time_hi_and_version = (uuid.time_hi_and_version & 0x0FFF) | 0x6000;
+    huuid_pack(&uuid,time_uuid);
+}
+
+void huuid_time_ordered_random_uuid_format(huuid_t time_ordered_random_uuid,uint64_t unix_ts_ms)
+{
+    if(time_ordered_random_uuid==NULL)
+    {
+        return;
+    }
+    huuid_base_version_t uuid;
+    huuid_unpack(time_ordered_random_uuid,&uuid);
+    uuid.time_low=(unix_ts_ms>>16);
+    uuid.time_mid=(unix_ts_ms&0xFFFF);
+    uuid.clock_seq = (uuid.clock_seq & 0x3FFF) | 0x8000;
+    uuid.time_hi_and_version = (uuid.time_hi_and_version & 0x0FFF) | 0x7000;
+    huuid_pack(&uuid,time_ordered_random_uuid);
 }
 
 void huuid_custom_uuid_format(huuid_t custom_uuid)
