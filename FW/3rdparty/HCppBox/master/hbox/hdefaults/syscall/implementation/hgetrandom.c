@@ -17,6 +17,12 @@
 #define HDEFAULTS_SYSCALL_HGETRANDOM  HDEFAULTS_OS_FREEBSD_SYSCALL_getrandom
 #endif
 
+#if defined(HDEFAULTS_OS_EMSCRIPTEN) && !defined(HGETRANDOM)
+/*
+ * Emscripten 默认不支持链接此系统调用
+ */
+#undef HDEFAULTS_SYSCALL_HGETRANDOM
+#endif // HDEFAULTS_OS_EMSCRIPTEN
 
 #ifdef HDEFAULTS_SYSCALL_HGETRANDOM
 
@@ -33,10 +39,12 @@ HDEFAULTS_USERCALL_DEFINE3(hgetrandom,HDEFAULTS_SYSCALL_HGETRANDOM,hgetrandom_ss
     hgetrandom_ssize_t ret=-1;
 #if defined(HGETRANDOM)
     ret=HGETRANDOM(buffer,length,flags);
-#elif defined(HDEFAULTS_OS_UNIX)
+#elif defined(HDEFAULTS_OS_UNIX) && (!defined(HDEFAULTS_LIBC_UCLIBC))
     ret=getrandom(buffer,length,flags);
 #else
     {
+        static bool is_random_init=false;
+        if(!is_random_init)
         {
             //使用当前时间作为随机数种子
             hgettimeofday_timeval_t tv= {0};
@@ -44,6 +52,7 @@ HDEFAULTS_USERCALL_DEFINE3(hgetrandom,HDEFAULTS_SYSCALL_HGETRANDOM,hgetrandom_ss
             if(tv.tv_usec!=0 && tv.tv_sec!=0)
             {
                 srand(tv.tv_sec+tv.tv_usec);
+                is_random_init=true;
             }
         }
         {

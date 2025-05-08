@@ -608,11 +608,6 @@
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\hdefaults.c</FilePath>
             </File>
             <File>
-              <FileName>hstacklesscoroutine.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hstacklesscoroutine.c</FilePath>
-            </File>
-            <File>
               <FileName>hchain.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\cpp\hchain.cpp</FilePath>
@@ -656,11 +651,6 @@
               <FileName>hobj.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\cpp\hobj.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>hmodbus.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hmodbus.c</FilePath>
             </File>
             <File>
               <FileName>hgui.c</FileName>
@@ -756,6 +746,11 @@
               <FileName>h3rdparty_softfp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_softfp.c</FilePath>
+            </File>
+            <File>
+              <FileName>hnet.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hnet.c</FilePath>
             </File>
           </Files>
         </Group>
