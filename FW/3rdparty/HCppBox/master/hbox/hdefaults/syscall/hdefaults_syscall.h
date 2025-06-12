@@ -29,6 +29,15 @@ hdefaults_syscall_function_t hdefaults_syscall_function_find(uintptr_t number);
 #include "wrapper/hgettimeofday.h"
 #include "wrapper/hsettimeofday.h"
 #include "wrapper/hgetrandmon.h"
+#include "wrapper/hmmap.h"
+#include "wrapper/hmsync.h"
+#include "wrapper/hmunmap.h"
+#include "wrapper/hmprotect.h"
+#include "wrapper/hclose.h"
+#include "wrapper/hread.h"
+#include "wrapper/hwrite.h"
+#include "wrapper/hlseek.h"
+#include "wrapper/hopen.h"
 
 #ifdef __cplusplus
 }

@@ -8,5 +8,6 @@
  **************************************************************/
 #include "hdriverframework.h"
 
-
+#include "hdriverframework/hdriverframework.c"
+#include "hdriverframework/hdriverframework_dummy.c"
 #include "hdriverframework/hwatchdog/hwatchdog.c"

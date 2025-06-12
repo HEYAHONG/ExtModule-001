@@ -16,6 +16,7 @@ extern "C"
 
 #include "hruntime/hruntime.h"
 #include "hruntime/hstacklesscoroutine.h"
+#include "hruntime/hexecutableloader.h"
 
 #ifdef __cplusplus
 }

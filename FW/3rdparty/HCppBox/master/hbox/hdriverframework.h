@@ -6,14 +6,16 @@
  * Copyright: HYH (hyhsystem.cn)
  * License:   MIT
  **************************************************************/
-#ifndef __HDRIVERFRAMEWORK_H__
-#define __HDRIVERFRAMEWORK_H__
+#ifndef __HDRIVERFRAMEWORK_INCLUDE_H__
+#define __HDRIVERFRAMEWORK_INCLUDE_H__
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif // __cplusplus
 
+#include "hdriverframework/hdriverframework.h"
+#include "hdriverframework/hdriverframework_dummy.h"
 #include "hdriverframework/hwatchdog/hwatchdog.h"
 
 #ifdef __cplusplus
@@ -21,4 +23,4 @@ extern "C"
 #endif // __cplusplus
 
 
-#endif // __HDRIVERFRAMEWORK_H__
+#endif // __HDRIVERFRAMEWORK_INCLUDE_H__
