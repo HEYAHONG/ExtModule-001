@@ -29,7 +29,7 @@ project(${PROJECT_NAME} C CXX ASM)
 #设置编译选项(采用newlib的nano.specs)
 set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} \
 		-Wall \
-		-O2 \
+		-Os \
 		-DGCC_COMPILE=1 \
 		-mthumb \
 		-ffunction-sections \
@@ -39,11 +39,12 @@ set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} \
 		-march=armv6-m \
 		-specs=nano.specs \
 		-Wno-restrict\
+		-flto \
 		 ")
 set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} \
                 -Wall \
 		-fno-rtti \
-		-O2 \
+		-Os \
                 -DGCC_COMPILE=1 \
 		-mthumb \
                 -ffunction-sections \
@@ -53,6 +54,7 @@ set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} \
                 -Wno-psabi \
                 -march=armv6-m \
 		-specs nano.specs \
+		-flto \
                  " )
 set(CMAKE_EXE_LINKER_FLAGS " ${CMAKE_EXE_LINKER_FLAGS}\
 		-mthumb \
@@ -61,6 +63,7 @@ set(CMAKE_EXE_LINKER_FLAGS " ${CMAKE_EXE_LINKER_FLAGS}\
 		-T${CMAKE_CURRENT_SOURCE_DIR}/py32f002bx5.ld \
 		-Wl,--warn-common \
 		-Wl,-Map,${PROJECT_NAME}.map \
+		-flto \
 		")
 
 set(BUILD_SHARED_LIBS OFF)
@@ -72,7 +75,7 @@ add_definitions(
 -DHDEFAULTS_MUTEX_UNLOCK=mutex_unlock
 -DHDEFAULTS_TICK_GET=tick_get
 -DUSING_HMEMORYHEAP
--DHMEMORYHEAP_DEFAULT_POOL_SIZE=76
+-DHMEMORYHEAP_DEFAULT_POOL_SIZE=768
 -DHDEFAULTS_SYSCALL_NO_IMPLEMENTATION=1
 )
 #设置头文件目录
