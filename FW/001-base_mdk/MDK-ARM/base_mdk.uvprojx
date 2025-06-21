@@ -314,7 +314,7 @@
             <interw>1</interw>
             <Optim>6</Optim>
             <oTime>0</oTime>
-            <SplitLS>0</SplitLS>
+            <SplitLS>1</SplitLS>
             <OneElfS>1</OneElfS>
             <Strict>0</Strict>
             <EnumInt>0</EnumInt>
@@ -336,7 +336,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,PY32F002Bx5,HDEFAULTS_MUTEX_LOCK=mutex_lock,HDEFAULTS_MUTEX_UNLOCK=mutex_unlock,HDEFAULTS_TICK_GET=tick_get,USING_HMEMORYHEAP,HMEMORYHEAP_DEFAULT_POOL_SIZE=768,HDEFAULTS_SYSCALL_NO_IMPLEMENTATION=1</Define>
+              <Define>USE_HAL_DRIVER,PY32F002Bx5,HDEFAULTS_MUTEX_LOCK=mutex_lock,HDEFAULTS_MUTEX_UNLOCK=mutex_unlock,HDEFAULTS_TICK_GET=tick_get,HABORT=hbox_abort,HEXIT=hbox_exit,HFPUTS=hbox_fputs,HVFPRINTF=hbox_vfprintf, HPUTS=hbox_puts,USING_HMEMORYHEAP,HMEMORYHEAP_DEFAULT_POOL_SIZE=768,HDEFAULTS_SYSCALL_NO_IMPLEMENTATION=1,H3RDPARTY_USING_SYSTEM_ARGTABLE3</Define>
               <Undefine></Undefine>
               <IncludePath>..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Device\PY32F0xx\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\PY32F002B_HAL_Driver\Inc;..\;..\..\3rdparty\HCppBox\master\hbox;..\..\3rdparty\HCppBox\master\hbox\cpp;..\driver;.\</IncludePath>
             </VariousControls>
@@ -1024,6 +1024,81 @@
               <FileName>h3rdparty_libqrencode_split.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_libqrencode_split.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_cmd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_cmd.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_date.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_date.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_dbl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_dbl.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_dstr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_dstr.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_end.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_end.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_file.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_file.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_getopt_long.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_getopt_long.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_hashtable.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_hashtable.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_int.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_int.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_lit.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_lit.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_rem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_rem.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_rex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_rex.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_str.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_str.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_arg_utils.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_arg_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_argtable3_argtable3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_argtable3_argtable3.c</FilePath>
             </File>
           </Files>
         </Group>
