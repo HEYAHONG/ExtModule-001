@@ -29,3 +29,13 @@
  */
 #include "hmemory/hdoublylinkedlist.c"
 
+
+/*
+ * 软件虚拟内存
+ */
+#include "hmemory/hsoftwarevirtualmemory.c"
+
+/*
+ * 静态内存分配
+ */
+ #include "hmemory/hmemorystaticallocator.c"
