@@ -27,4 +27,6 @@
 #include "hcrypto/hsm4.c"
 #include "hcrypto/hhmac.c"
 #include "hcrypto/hpoly1305.c"
+#include "hcrypto/hecdsa.c"
+#include "hcrypto/heddsa.c"
 
