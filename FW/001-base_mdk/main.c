@@ -55,6 +55,16 @@ int main(void)
     /* System clock configuration */
     APP_SystemClockConfig();
 
+    /*
+     * 更新时钟
+     */
+    SystemCoreClockUpdate();
+
+    /*
+     * 重新初始化时钟节拍
+     */
+    HAL_InitTick(TICK_INT_PRIORITY);
+
     /* infinite loop */
     while (1)
     {
