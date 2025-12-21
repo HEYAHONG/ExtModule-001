@@ -30,3 +30,4 @@ arm-none-eabi-gcc主要使用采用newlib-nano作为C运行库的工具，本工
 # 固件列表
 
 - [001-base_mdk](001-base_mdk):基础模板，采用Keil MDK5编译。
+- [002-softplc](002-softplc)：软件PLC模板。
