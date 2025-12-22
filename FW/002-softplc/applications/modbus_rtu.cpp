@@ -177,9 +177,9 @@ HSTACKLESSCOROUTINE_BLOCK_START(modbus_rtu)
 //初始化modbus参数
 ctx=modbus_rtu_slave_tiny_context_default();
 ctx.addr=MODBUS_NODE_ADDRESS_DEFAULT;
-ctx.buffer=(uint8_t *)hdefaults_malloc(MODBUS_RTU_MAX_ADU_LENGTH,NULL);//申请发送缓存
+ctx.buffer=NULL;
 modbus_rx_buffer=(uint8_t *)hdefaults_malloc(MODBUS_RTU_MAX_ADU_LENGTH,NULL);
-if(modbus_rx_buffer==NULL || ctx.buffer == NULL)
+if(modbus_rx_buffer==NULL)
 {
     //协程退出
     hstacklesscoroutine_goto_label(MODBUS_RTU_LOOP_EXIT);

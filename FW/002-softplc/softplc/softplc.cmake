@@ -30,6 +30,8 @@ file(GLOB SOFTPLC_ST_PLC_C_FILES ${CMAKE_CURRENT_LIST_DIR}/softplc/Config*.c ${C
 add_library(softplc_st_plc ${SOFTPLC_ST_PLC_C_FILES})
 ##按照unix的代码编译,防止找不到time_t定义
 target_compile_definitions(softplc_st_plc PRIVATE -D__unix__ )
+##对转换的代码关闭警告
+target_compile_options(softplc_st_plc PRIVATE -w )
 add_dependencies(softplc_st_plc softplc_st)
 set_property(TARGET softplc_st_plc PROPERTY CXX_STANDARD 11)
 set_property(TARGET softplc_st_plc PROPERTY C_STANDARD 11)
