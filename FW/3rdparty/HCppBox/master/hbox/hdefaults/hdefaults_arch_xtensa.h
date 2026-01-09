@@ -1,21 +1,13 @@
 /***************************************************************
- * Name:      h3rdparty.c
- * Purpose:   引入第三方源代码文件
+ * Name:      hdefaults_arch_xtensa.h
+ * Purpose:   定义一些默认宏定义
  * Author:    HYH (hyhsystem.cn)
- * Created:   2024-09-27
+ * Created:   2025-12-30
  * Copyright: HYH (hyhsystem.cn)
  * License:   MIT
  **************************************************************/
-#include "h3rdparty.h"
-#include "hdefaults.h"
+#ifndef __HDEFAULTS_ARCH_XTENSA_H__
+#define __HDEFAULTS_ARCH_XTENSA_H__
 
-void h3rdparty_init(void)
-{
 
-}
-
-void h3rdparty_loop(void)
-{
-
-}
-
+#endif
