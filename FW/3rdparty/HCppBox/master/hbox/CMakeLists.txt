@@ -6,7 +6,7 @@ if(MSVC)
     add_compile_options(-utf-8 )
 endif()
 
-add_library(HBox EXCLUDE_FROM_ALL)
+add_library(HBox STATIC EXCLUDE_FROM_ALL)
 file(GLOB  HBOX_C_CPP_FILES *.cpp *.hpp *.c *.h cpp/*.cpp cpp/*.hpp cpp/*.c cpp/*.h h3rdparty/*.cpp h3rdparty/*.hpp h3rdparty/*.c h3rdparty/*.h )
 target_sources(HBox PRIVATE ${HBOX_C_CPP_FILES})
 target_include_directories(HBox PUBLIC ./ )
@@ -32,11 +32,20 @@ target_link_libraries(HBox dl)
 target_compile_definitions(HBox PUBLIC  HAVE_DLFCN_H=1)
 endif()
 
+
+
 #查找sys/mman.h
 check_include_file(sys/mman.h HAVE_SYS_MMAN_H)
 if(HAVE_SYS_MMAN_H)
 target_compile_definitions(HBox PUBLIC  HAVE_SYS_MMAN_H=1)
 endif()
+
+#查找sys/ioctl.h
+check_include_file(sys/ioctl.h HAVE_SYS_IOCTL_H)
+if(HAVE_SYS_IOCTL_H)
+target_compile_definitions(HBox PUBLIC  HAVE_SYS_IOCTL_H=1)
+endif()
+
 
 #查找unistd.h
 check_include_file(unistd.h HAVE_UNISTD_H)
@@ -54,6 +63,18 @@ endif()
 check_include_file(threads.h HAVE_THREADS_H)
 if(HAVE_THREADS_H)
 target_compile_definitions(HBox PUBLIC  HAVE_THREADS_H=1)
+
+#查找threads库(c11)
+find_package(Threads)
+if(Threads_FOUND)
+target_link_libraries(HBox Threads::Threads)
+
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+target_link_libraries(HBox stdthreads)
+endif()
+
+endif()
+
 endif()
 
 #查找stdatomic.h
