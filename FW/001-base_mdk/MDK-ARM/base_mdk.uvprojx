@@ -1218,11 +1218,6 @@
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty.c</FilePath>
             </File>
             <File>
-              <FileName>hsoftplc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hsoftplc.c</FilePath>
-            </File>
-            <File>
               <FileName>h3rdparty_uriparser_UriCommon.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_uriparser_UriCommon.c</FilePath>
@@ -1396,6 +1391,26 @@
               <FileName>h3rdparty_zlib_port.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_zlib_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_libfdt_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_libfdt_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_mini-rv32ima_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_mini-rv32ima_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_Z80_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_Z80_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_Z80_Z80.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_Z80_Z80.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,PY32F002Bx5,HDEFAULTS_MUTEX_LOCK=mutex_lock,HDEFAULTS_MUTEX_UNLOCK=mutex_unlock,HDEFAULTS_TICK_GET=tick_get,HABORT=hbox_abort,HEXIT=hbox_exit,HFPUTS=hbox_fputs,HVFPRINTF=hbox_vfprintf, HPUTS=hbox_puts,USING_HMEMORYHEAP,HMEMORYHEAP_DEFAULT_POOL_SIZE=512,HDEFAULTS_SYSCALL_NO_IMPLEMENTATION=1,H3RDPARTY_USING_SYSTEM_ARGTABLE3</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Device\PY32F0xx\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\PY32F002B_HAL_Driver\Inc;..\;..\..\3rdparty\HCppBox\master\hbox;..\..\3rdparty\HCppBox\master\hbox\cpp;..\driver;.\</IncludePath>
+              <IncludePath>..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Device\PY32F0xx\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\CMSIS\Include;..\..\3rdparty\PY32F002B_Firmware_V1.1.2\Drivers\PY32F002B_HAL_Driver\Inc;..\;..\..\3rdparty\HCppBox\master\hbox;..\..\3rdparty\HCppBox\master\hbox\cpp;..\driver;.\;..\..\3rdparty\HCppBox\master\hbox\hstandalone\hsoftplc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1223,11 +1223,6 @@
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty.c</FilePath>
             </File>
             <File>
-              <FileName>hsoftplc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hsoftplc.c</FilePath>
-            </File>
-            <File>
               <FileName>h3rdparty_uriparser_UriCommon.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_uriparser_UriCommon.c</FilePath>
@@ -1401,6 +1396,31 @@
               <FileName>h3rdparty_zlib_port.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_zlib_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_libfdt_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_libfdt_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_mini-rv32ima_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_mini-rv32ima_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_Z80_port.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_Z80_port.c</FilePath>
+            </File>
+            <File>
+              <FileName>h3rdparty_Z80_Z80.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\h3rdparty\h3rdparty_Z80_Z80.c</FilePath>
+            </File>
+            <File>
+              <FileName>hsoftplc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\3rdparty\HCppBox\master\hbox\hstandalone\hsoftplc\hsoftplc.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,5 +1,6 @@
 #include "main.h"
 #include "hbox.h"
+#include "hsoftplc.h"
 
 static void hsoftplc_callback(hsoftplc_callback_type_t cb_type)
 {
