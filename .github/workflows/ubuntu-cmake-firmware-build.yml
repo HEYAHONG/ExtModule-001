@@ -62,21 +62,19 @@ jobs:
             build-essential \
             cmake \
             gcc-arm-none-eabi \
-            libnewlib-arm-none-eabi \
-            autoconf \
-            automake \
-            bison \
-            flex \
-            libtool
+            libnewlib-arm-none-eabi
           # 002-softplc 的 CMake 配置需要 matiec 的 iec2c 工具。
+          # 使用仓库内自带的 matiec 源码编译，不依赖外部下载。
           if [[ ! -x "$(command -v iec2c 2>/dev/null || true)" ]]; then
-            git clone --depth 1 https://github.com/thiagoralves/matiec.git "$RUNNER_TEMP/matiec"
-            pushd "$RUNNER_TEMP/matiec"
-            autoreconf -i
-            ./configure
-            make -j"$(nproc)"
-            sudo make install
-            popd
+            matiec_src="FW/3rdparty/HCppBox/master/htools/3rdparty_tools/matiec"
+            matiec_install="${RUNNER_TEMP}/matiec-install"
+            cmake \
+              -S "$matiec_src" \
+              -B "${RUNNER_TEMP}/matiec-build" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DHTOOLS_INSTALL_DIR="$matiec_install"
+            cmake --build "${RUNNER_TEMP}/matiec-build" --target install --parallel
+            echo "${matiec_install}/bin" >> "$GITHUB_PATH"
           fi
 
       - name: Configure ${{ matrix.project }}
